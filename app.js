@@ -12,6 +12,13 @@ app.use((req, res, next) => {
 })
 app.use('/api', apiRoutes);
 
+app.get("/", (req, res, next) => {
+    var message = "Welcome to Referin AI API"
+    res.status(200).json(
+        { message: message }
+    );
+});
+
 app.listen(3000, () => {
     console.log("Happy Coding")
 })
