@@ -5,7 +5,8 @@ const router = express.Router()
 
 router.post('/add-vacancy', refererController.sendVacancyData);
 router.post('/add-referer-info', refererController.sendSessionInfoWithParams);
-router.post('/find-seekers', refererController.checkSeekerViaCompany);
+router.post('/find-seekers-count', refererController.checkSeekerCountViaCompany);
+router.post('/find-seekers-data', refererController.sendSeekerData);
 
 module.exports = router
 
