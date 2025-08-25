@@ -24,7 +24,7 @@ exports.stripeWebhook = (request, response) => {
         var session = event.data.object;
         var metaData = session.metadata;
         var frontendUid = metaData.frontendUid;
-        console.log("FrontendUID --> " + frontendUid);
+        console.log("FrontendUID --> " + frontendUid); // b6c977a4b64c20ff8abaf71d99ff9f21251de4bc2e3a4baf9244f104bf1e9c5a
 
         response.status(200).send({"message": "success"});
 

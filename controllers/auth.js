@@ -54,5 +54,21 @@ exports.linkedInCallback = async (req, res) => {
         console.error(err.response?.data || err.message);
         res.status(500).send('Error during LinkedIn OAuth process');
       }
-}
+};
 
+
+exports.getAllUsers = (req, res, next) => {
+
+  User.fetchAll()
+  .then((resp) => {
+    return resp.data;
+  })
+  .then((data) => {
+    console.log(data);
+  })
+  .catch(err => console.log(err))
+  res.status(200).json(
+    {"message": "users"}
+  )
+}
+ 
