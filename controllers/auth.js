@@ -8,7 +8,9 @@ dotenv.config();
 
 exports.linkedInAuth = (req, res, next) => {
     const scope = 'openid profile email';
-    const state = Math.random().toString(36).substring(2, 15);
+    console.log(req.body.redirection_url);
+    var stateData = {"redirection_url": req.body.redirection_url}
+    const state = encodeURIComponent(JSON.stringify(stateData));
     var url = process.env.LINKEDIN_REDIRECT_URI;
     const authURL = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${process.env.LINKEDIN_CLIENT_ID}&redirect_uri=${encodeURIComponent(url)}&state=${state}&scope=${encodeURIComponent(scope)}`;
     res.status(200).json(
@@ -19,10 +21,8 @@ exports.linkedInAuth = (req, res, next) => {
 exports.linkedInCallback = async (req, res) => {
       const code = req.query.code;
       const state = req.query.state;
-    
-      console.log("state: " + state);
-
-      var redirectionUri = process.env.FRONTEND_URL;
+      const stateData = JSON.parse(decodeURIComponent(state));
+      var redirectionUri = stateData.redirection_url;
       var andOrNew = "?";
     
       if (!code) return res.status(400).send('No code returned from LinkedIn');
@@ -61,7 +61,7 @@ exports.linkedInCallback = async (req, res) => {
           UserToken.getOrCreate({"user_id": userId})
             .then((resp) => {
               var userToken = resp.data[0].id;
-              res.redirect(`${redirectionUri}${andOrNew}userid=${userId}&token=${userToken}`);
+              res.redirect(`${redirectionUri}`);
           })
 
           .catch(err => console.log(err))
