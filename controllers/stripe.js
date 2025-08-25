@@ -1,7 +1,8 @@
 const dotenv = require('dotenv')
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-dotenv.config();
+const StripeSession = require('../models/payment');
 
+dotenv.config();
 
 exports.stripeWebhook = (request, response) => {
     let event = request.body;
@@ -23,10 +24,20 @@ exports.stripeWebhook = (request, response) => {
     if (event.type == "checkout.session.completed"){
         var session = event.data.object;
         var metaData = session.metadata;
-        var frontendUid = metaData.frontendUid;
-        console.log("FrontendUID --> " + frontendUid); // b6c977a4b64c20ff8abaf71d99ff9f21251de4bc2e3a4baf9244f104bf1e9c5a
+        var frontendUid = metaData.frontendUid || "b6c977a4b64c20ff8abaf71d99ff9f21251de4bc2e3a4baf9244f104bf1e9c5a";
+        var userId = metaData.user_id || "5"
+        
+        var sessionData = {
+            user_id: userId,
+            session_id: session.id,
+            meta_uid: frontendUid
+        }
+        StripeSession.insertSession(sessionData)
+        .then((resp) => {
+            response.status(200).send({"message": "success"});
+        })
+        .catch(err => console.log(err));
 
-        response.status(200).send({"message": "success"});
 
     } else {
         response.status(200).send({"message": "other event type handled"});

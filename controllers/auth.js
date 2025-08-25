@@ -1,5 +1,6 @@
 const dotenv = require('dotenv')
 const User = require('../models/user');
+const UserToken = require('../models/token');
 const axios = require('axios');
 const jwtDecode = require('jwt-decode');
 
@@ -25,6 +26,9 @@ exports.linkedInCallback = async (req, res) => {
       const state = req.query.state;
     
       console.log("state: " + state);
+
+      var redirectionUri = process.env.FRONTEND_URL;
+      var andOrNew = "?";
     
       if (!code) return res.status(400).send('No code returned from LinkedIn');
     
@@ -46,9 +50,28 @@ exports.linkedInCallback = async (req, res) => {
     
         const user = jwtDecode.jwtDecode(idToken);
     
-        console.log(user)
-        
-        res.redirect(`${process.env.FRONTEND_URL}`);
+        var userData = {
+          "linkedin_aud": user.aud,
+          "linkedin_sub": user.sub,
+          "full_name": user.name, 
+          "given_name": user.given_name, 
+          "family_name": user.family_name, 
+          "picture": user.picture,
+          "email": user.email,
+        }
+        User.getOrCreate(userData)
+        .then((resp) => {
+          var data = resp.data[0];
+          var userId = data.id;
+          UserToken.getOrCreate({"user_id": userId})
+            .then((resp) => {
+              var userToken = resp.data[0].id;
+              res.redirect(`${redirectionUri}${andOrNew}userid=${userId}&token=${userToken}`);
+          })
+
+          .catch(err => console.log(err))
+        })
+        .catch(err => console.log(err))
 
       } catch (err) {
         console.error(err.response?.data || err.message);
