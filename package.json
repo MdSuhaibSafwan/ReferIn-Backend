@@ -11,11 +11,15 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@clerk/clerk-sdk-node": "^5.1.6",
     "@clerk/express": "^1.7.24",
+    "axios": "^1.11.0",
     "body-parser": "^2.2.0",
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
+    "jwt-decode": "^4.0.0",
     "nodemon": "^3.1.10",
+    "querystring": "^0.2.1",
     "vercel": "^46.0.2"
   }
 }
