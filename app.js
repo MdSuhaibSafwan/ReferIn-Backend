@@ -7,6 +7,14 @@ const stripeController = require('./controllers/stripe');
 dotenv.config();
 
 const app = express();
+
+app.use((req, res, next) => {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    res.setHeader("Access-Control-Allow-Methods", "*");
+    next();
+})
+
 app.post('/auth/linkedin', authController.linkedInAuth);
 app.get('/auth/linkedin/callback', authController.linkedInCallback);
 app.post('/webhook', express.raw({ type: 'application/json' }), stripeController.stripeWebhook);
