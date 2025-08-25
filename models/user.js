@@ -1,13 +1,9 @@
-const BaseModel = require('./baseModel');
+const supabase = require("../db/supabase");
 
-class User extends BaseModel {
-  constructor() {
-    super('users'); // Supabase table name
-  }
-
-  fetchByLinkedinId(linkedinId) {
-    return this.fetchOneBy('linkedin_id', linkedinId);
+class User {
+  static async fetchAll(){
+    return await supabase.from("users").select("*");
   }
 }
 
-module.exports = new User();
+module.exports = User;
