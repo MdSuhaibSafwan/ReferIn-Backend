@@ -4,15 +4,10 @@ const dotenv = require('dotenv')
 dotenv.config();
 const axios = require('axios');
 const jwtDecode = require('jwt-decode');
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const bodyParser = require('body-parser');  
 
 const app = express();
-app.use(express.json());
-app.use((req, res, next) => {
-    res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-    res.setHeader("Access-Control-Allow-Methods", "*");
-    next();
-})
 
 app.post('/auth/linkedin', (req, res, next) => {
   const scope = 'openid profile email';
@@ -64,6 +59,45 @@ app.get('/auth/linkedin/callback', async (req, res) => {
   }
 });
 
+app.post('/webhook', express.raw({ type: 'application/json' }), (request, response) => {
+  let event = request.body;
+  var endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  if (endpointSecret) {
+    const signature = request.headers['stripe-signature'];
+    try {
+      event = stripe.webhooks.constructEvent(
+        request.body,
+        signature,
+        endpointSecret
+      );
+    } catch (err) {
+      console.log(`⚠️  Webhook signature verification failed.`, err.message);
+      return response.sendStatus(400);
+    }
+  }
+
+  if (event.type == "checkout.session.completed"){
+    var session = event.data.object;
+    var metaData = session.metadata;
+    var frontendUid = metaData.frontendUid;
+    console.log(frontendUid);
+
+    response.status(200).send({"message": "success"});
+
+  } else {
+    response.status(200).send({"message": "other event type handled"});
+  };
+
+
+});
+
+app.use(express.json());
+app.use((req, res, next) => {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    res.setHeader("Access-Control-Allow-Methods", "*");
+    next();
+})
 
 app.use('/api', apiRoutes);
 
