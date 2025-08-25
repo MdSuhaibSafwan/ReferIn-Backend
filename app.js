@@ -16,7 +16,7 @@ app.use((req, res, next) => {
 })
 
 app.post('/auth/linkedin', express.json(), express.urlencoded({ extended: true }), authController.linkedInAuth);
-app.get('/auth/linkedin/callback', express.raw({ type: 'application/json' }), authController.linkedInCallback);
+app.get('/auth/linkedin/callback', authController.linkedInCallback);
 app.post('/webhook', express.raw({ type: 'application/json' }), stripeController.stripeWebhook);
 
 app.use('/api', apiRoutes);
