@@ -19,13 +19,11 @@ app.post('/auth/linkedin', (req, res, next) => {
   const state = Math.random().toString(36).substring(2, 15);
   var hasReferrers = true;
   if (hasReferrers) {
-    var url = "http://localhost:3000/auth/linkedin/callback";
+    var url = process.env.LINKEDIN_REDIRECT_URI;
   } else {
-    var url = "http://localhost:3000/auth/linkedin/callback";
+    var url = process.env.LINKEDIN_REDIRECT_URI;
   }
-  console.log(process.env.LINKEDIN_CLIENT_ID);
   const authURL = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${process.env.LINKEDIN_CLIENT_ID}&redirect_uri=${encodeURIComponent(url)}&state=${state}&scope=${encodeURIComponent(scope)}`;
-  console.log(authURL); 
   res.status(200).json(
     {"link": authURL}
   );
@@ -51,7 +49,6 @@ app.get('/auth/linkedin/callback', async (req, res) => {
       }),
       { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
     );
-    console.log(tokenResponse.data);
 
     const accessToken = tokenResponse.data.access_token;
     const idToken = tokenResponse.data.id_token;
@@ -60,8 +57,7 @@ app.get('/auth/linkedin/callback', async (req, res) => {
 
     console.log(user)
     
-    // Redirect user to frontend with token
-    // res.redirect(`${process.env.FRONTEND_URL}`);
+    res.redirect(`${process.env.FRONTEND_URL}`);
   } catch (err) {
     console.error(err.response?.data || err.message);
     res.status(500).send('Error during LinkedIn OAuth process');
@@ -72,12 +68,7 @@ app.get('/auth/linkedin/callback', async (req, res) => {
 app.use('/api', apiRoutes);
 
 app.get("/", (req, res, next) => {
-    clerk.clerkClient.users.getUserList()
-    .then((resp) => {
-        console.log(resp);
-    })
-    .catch(resp => console.log(resp));
-    var message = "Welcome to Referin AI API"
+    var message = "Welcome to Referin AI API";
     res.status(200).json(
         { message: message }
     );
