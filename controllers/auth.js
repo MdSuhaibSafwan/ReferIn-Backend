@@ -9,12 +9,7 @@ dotenv.config();
 exports.linkedInAuth = (req, res, next) => {
     const scope = 'openid profile email';
     const state = Math.random().toString(36).substring(2, 15);
-    var hasReferrers = true;
-    if (hasReferrers) {
-        var url = process.env.LINKEDIN_REDIRECT_URI;
-    } else {
-        var url = process.env.LINKEDIN_REDIRECT_URI;
-    }
+    var url = process.env.LINKEDIN_REDIRECT_URI;
     const authURL = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${process.env.LINKEDIN_CLIENT_ID}&redirect_uri=${encodeURIComponent(url)}&state=${state}&scope=${encodeURIComponent(scope)}`;
     res.status(200).json(
         {"link": authURL}
