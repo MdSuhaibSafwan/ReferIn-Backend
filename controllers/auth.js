@@ -10,7 +10,7 @@ dotenv.config();
 
 exports.linkedInAuth = (req, res, next) => {
     const scope = 'openid profile email';
-    var stateData = {"redirectionUrl": req.body.redirection_url, "getToken": req.body.get_token, "stripeSessionId": req.body.session_id, "metaUid": req.body.meta_uid}
+    var stateData = {"redirectionUrl": req.body.redirection_url, "getToken": req.body.get_token, "stripeSessionId": req.body.session_id, "metaUid": req.body.meta_uid, "userType": req.body.meta.user_type}
     const state = encodeURIComponent(JSON.stringify(stateData));
     var url = process.env.LINKEDIN_REDIRECT_URI;
     const authURL = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${process.env.LINKEDIN_CLIENT_ID}&redirect_uri=${encodeURIComponent(url)}&state=${state}&scope=${encodeURIComponent(scope)}`;
