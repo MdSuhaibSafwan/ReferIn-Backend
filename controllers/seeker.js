@@ -18,13 +18,15 @@ exports.verifySeekerInfoForSession = function(req, res, next){
     .then((stripeData) => {
         if (stripeData.data.length > 0) {
             var userData = stripeData.data[0]
-            userToken.findByUserId(userData.user_id)
-            .then((data) => {
-                var tokenData = data.data[0];
+            console.log(userData);
+
+            // userToken.findByUserId(userData.user_id)
+            // .then((data) => {
+            //     var tokenData = data.data[0];
                 var respData = {
                     "message": "Accepted",
                     "referers_found": true,
-                    "token": tokenData.id,
+                    // "token": tokenData.id,
                     "data":[
                         {
                             "id": 46,
@@ -59,7 +61,7 @@ exports.verifySeekerInfoForSession = function(req, res, next){
 
                 console.log("Working As async")
                 // console.log(stripeData.data[0]);
-            })
+            // })
         } else {
             var data = {
                 "message": "Invalid Meta UID provided",
