@@ -1,10 +1,12 @@
 const express = require('express');
 const apiRoutes = require('./api');
 const dotenv = require('dotenv');
+dotenv.config();
+
 const authController = require('./controllers/auth');
 const stripeController = require('./controllers/stripe');
+// const assistant = require('./services/createAssistant');
 
-dotenv.config();
 
 const app = express();
 
@@ -31,4 +33,5 @@ app.get("/", (req, res, next) => {
 
 app.listen(3000, () => {
     console.log("Happy Coding");
+    // assistant()
 });
