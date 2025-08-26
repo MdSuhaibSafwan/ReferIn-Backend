@@ -72,13 +72,12 @@ exports.checkMatchesOfReferer = async (req, res, next) => {
     // });
 
     // console.log("Function call arguments:", functionCallArguments);
-    // var result = getReferersFromDB(functionCallArguments);
-    // console.log("Result:", result);
+    // var result = await getReferersFromDB(functionCallArguments);
 
     // input.push({
-    // type: "function_call_output",
-    // call_id: functionCall.call_id,
-    // output: JSON.stringify(result),
+    //     type: "function_call_output",
+    //     call_id: functionCall.call_id,
+    //     output: JSON.stringify(result),
     // });
 
     // console.log("Final input:");
@@ -93,11 +92,14 @@ exports.checkMatchesOfReferer = async (req, res, next) => {
     // });
 
     // console.log("Latest Response");
-    // console.log(response);
+    // console.log(response.output_text);
+
+    // JSON.parse()
 
     var data = {
         "message": "Accepted",
-        "referers_found": true
+        "referers_found": true,
+        "referer_count": 2
     }
     res.status(201).json(data)
 }
