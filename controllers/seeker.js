@@ -31,7 +31,16 @@ async function getReferersFromDB({ job_url=null, job_title=null, company_name=nu
         photo: "https://media.licdn.com/dms/image/v2/D5603AQGwIRxoiwakTw/profile-displayphoto-shrink_400_400/B56ZPTQ_SsHoAg-/0/1734416267206?e=1758758400&v=beta&t=W2gZN4T_Ix1bG9JIo2gPJClmrDrIbf60J3NAC5nuBdU", 
         location: "USA", 
         vacancies: "5", 
-        linkedin: "https://linkedin.com/in/bob" 
+        linkedin: "https://linkedin.com/in/john" 
+    },
+    { 
+        name: "John Doe", 
+        company: "Google", 
+        role: "Software Engineer", 
+        photo: "https://media.licdn.com/dms/image/v2/D5603AQGwIRxoiwakTw/profile-displayphoto-shrink_400_400/B56ZPTQ_SsHoAg-/0/1734416267206?e=1758758400&v=beta&t=W2gZN4T_Ix1bG9JIo2gPJClmrDrIbf60J3NAC5nuBdU", 
+        location: "USA", 
+        vacancies: "5", 
+        linkedin: "https://linkedin.com/in/doe" 
     },
   ]
 }
@@ -82,12 +91,12 @@ exports.checkMatchesOfReferer = async (req, res, next) => {
     });
 
     try{
-        var filteredReferers = JSON.parse(response.output_text);
+        // var filteredReferers = JSON.parse(response.output_text);
         var data = {
             "message": "Accepted",
             "referers_found": true,
-            "referer_count": filteredReferers.length,
-            "data": filteredReferers
+            "referer_count": JSON.parse(result).length,
+            "data": JSON.parse(result)
 
         }
         res.status(201).json(data)
