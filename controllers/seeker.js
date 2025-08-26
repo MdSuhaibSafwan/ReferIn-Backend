@@ -2,33 +2,51 @@ var StripeSession = require("../models/payment");
 var userToken = require("../models/token");
 var client = require("../services/openaiClient");
 
-async function getReferersFromDB({ job_url, job_title, company_name }) {
+async function getReferersFromDB({ job_url=null, job_title=null, company_name=null }) {
   console.log("Fetching referers from DB for:", { job_url, job_title, company_name });
 
-  // Fake data for testing
   return [
-    { name: "Alice Johnson", company: "Google", role: "Software Engineer", linkedin: "https://linkedin.com/in/alice" },
-    { name: "Bob Smith", company: "Microsoft", role: "Backend Engineer", linkedin: "https://linkedin.com/in/bob" },
-  ];
+    {
+        name: "Alice Johnson", 
+        company: "Google", 
+        role: "Backend Engineer", 
+        photo: "https://media.licdn.com/dms/image/v2/D5603AQGwIRxoiwakTw/profile-displayphoto-shrink_400_400/B56ZPTQ_SsHoAg-/0/1734416267206?e=1758758400&v=beta&t=W2gZN4T_Ix1bG9JIo2gPJClmrDrIbf60J3NAC5nuBdU", 
+        location: "USA", 
+        vacancies: "5", 
+        linkedin: "https://linkedin.com/in/alice" 
+    },
+    { 
+        name: "Bob Smith", 
+        company: "Microsoft", 
+        role: "Electrical Engineer", 
+        photo: "https://media.licdn.com/dms/image/v2/D5603AQGwIRxoiwakTw/profile-displayphoto-shrink_400_400/B56ZPTQ_SsHoAg-/0/1734416267206?e=1758758400&v=beta&t=W2gZN4T_Ix1bG9JIo2gPJClmrDrIbf60J3NAC5nuBdU", 
+        location: "USA", 
+        vacancies: "5", 
+        linkedin: "https://linkedin.com/in/bob" 
+    },
+    { 
+        name: "John Smith", 
+        company: "Google", 
+        role: "Manager of Google Tech Team", 
+        photo: "https://media.licdn.com/dms/image/v2/D5603AQGwIRxoiwakTw/profile-displayphoto-shrink_400_400/B56ZPTQ_SsHoAg-/0/1734416267206?e=1758758400&v=beta&t=W2gZN4T_Ix1bG9JIo2gPJClmrDrIbf60J3NAC5nuBdU", 
+        location: "USA", 
+        vacancies: "5", 
+        linkedin: "https://linkedin.com/in/bob" 
+    },
+  ]
 }
 
 
-const tools = [
-  {
-    type: "function",
-    name: "getReferersFromDB",
-    description: "Fetch referers from the database based on job info",
-    parameters: {
-      type: "object",
-      properties: {
-        job_url: {type: "string", description: "It's a job url",},
-        job_title: { type: "string" },
-        company_name: { type: "string" },
-      },
-      required: [],
-    },
-  },
-];
+const instructions = `
+    You are the Job Matching Assistant. Your role is:
+    - Accept one or more of the following input fields: "job_url", "job_title", "company_name".
+    - Validate inputs: at least one of these fields must be provided.
+    - Call the function "getReferers" to fetch referer data from the database.
+    - Filter results based on who can refer this particular seeker into the job of the company
+    - Return a clean, structured response of referers who best match the criteria.
+    - If no matches are found, return an empty array.
+    - Results must be in JSON array format.
+`;
 
 
 exports.checkMatchesOfReferer = async (req, res, next) => {
@@ -38,101 +56,58 @@ exports.checkMatchesOfReferer = async (req, res, next) => {
       company_name: req.body.job_company,
     };
     console.log("Seeker input:", seekerInput);
+    var result = await getReferersFromDB(seekerInput);
 
-    // let input = [
-    //   { role: "user", content: `Here is seeker input: ${JSON.stringify(seekerInput)}` },
-    // ];
-    // var response = await client.responses.create({
-    //     model: "gpt-3.5-turbo",
-    //     instructions: `
-    //         You are the Job Matching Assistant. Your role is:
-    //         - Accept one or more of the following input fields: "job_url", "job_title", "company_name".
-    //         - Validate inputs: at least one of these fields must be provided.
-    //         - Call the function "getReferers" to fetch referer data from the database.
-    //         - Filter results based on referer's expertise and relevance to the provided job field.
-    //         - Return a clean, structured response of referers who best match the criteria.
-    //         - If no matches are found, return an empty array.
-    //         - Results must be in JSON array format.
-    //     `,
-    //     input: input,
-    //     tools: tools,
-    // });
+    result = JSON.stringify(result);
 
-    // console.log("Response from OpenAI:", response);
+    var input = [
+        {
+            role: "system",
+            content: instructions,
+        },
+        {
+            role: "user",
+            content: `Seeker Input: ${JSON.stringify(seekerInput)}
+            Referers Data: ${result}
+            Instructions:
+            - Always respond in JSON array format like [referer1_data, referer2_data, ...] it shouldn't say {"matched_referers": [referer1_data, referer2_data, ...]}
+            - If no matches, return empty array.
+        `
+        }
+    ];
 
-    // let functionCall = null;
-    // let functionCallArguments = null;
-    // input = input.concat(response.output);
+    var response = await client.responses.create({
+        model: "gpt-3.5-turbo",
+        input: input
+    });
 
-    // response.output.forEach((item) => {
-    // if (item.type == "function_call") {
-    //         functionCall = item;
-    //         functionCallArguments = JSON.parse(item.arguments);
-    //     }
-    // });
+    try{
+        var filteredReferers = JSON.parse(response.output_text);
+        var data = {
+            "message": "Accepted",
+            "referers_found": true,
+            "referer_count": filteredReferers.length,
+            "data": filteredReferers
 
-    // console.log("Function call arguments:", functionCallArguments);
-    // var result = await getReferersFromDB(functionCallArguments);
+        }
+        res.status(201).json(data)
+    }
+    catch(err) {
+        console.log(err);
+        console.log(response.output_text);
+        var data = {
+            "message": "Accepted",
+            "referers_found": true,
+            "referer_count": 0,
+            "data": []
 
-    // input.push({
-    //     type: "function_call_output",
-    //     call_id: functionCall.call_id,
-    //     output: JSON.stringify(result),
-    // });
-
-    // console.log("Final input:");
-    // console.log(JSON.stringify(input));
-
-
-    // response = await client.responses.create({
-    //     model: "gpt-3.5-turbo",
-    //     instructions: "Respond in JSON with the referer's generated by a tool.",
-    //     tools,
-    //     input,
-    // });
-
-    // console.log("Latest Response");
-    // console.log(response.output_text);
-
-    // JSON.parse()
-
-    var data = {
-        "message": "Accepted",
-        "referers_found": true,
-        "referer_count": 3,
-        "data":[
-            {
-                "id": 46,
-                "name": "Suhaib Safwan",
-                "url": "https://www.linkedin.com/in/suhaib-safwan/",
-                "photo": "https://media.licdn.com/dms/image/v2/D5603AQGwIRxoiwakTw/profile-displayphoto-shrink_400_400/B56ZPTQ_SsHoAg-/0/1734416267206?e=1758758400&v=beta&t=W2gZN4T_Ix1bG9JIo2gPJClmrDrIbf60J3NAC5nuBdU",
-                "vacancies": 5,
-                "company_name": "Facebook",
-                "location": "USA"
-            },
-            {
-                "id": 47,
-                "name": "Tafsir",
-                "url": "https://www.linkedin.com/in/tafsirul-islam-b6b593338/",
-                "photo": "https://media.licdn.com/dms/image/v2/D5603AQGwIRxoiwakTw/profile-displayphoto-shrink_400_400/B56ZPTQ_SsHoAg-/0/1734416267206?e=1758758400&v=beta&t=W2gZN4T_Ix1bG9JIo2gPJClmrDrIbf60J3NAC5nuBdU",
-                "vacancies": 7,
-                "company_name": "Meta",
-                "location": "USA"
-            },
-            {
-                "id": 47,
-                "name": "Faruk",
-                "url": "https://www.linkedin.com/in/tafsirul-islam-b6b593338/",
-                "photo": "https://media.licdn.com/dms/image/v2/D5603AQGwIRxoiwakTw/profile-displayphoto-shrink_400_400/B56ZPTQ_SsHoAg-/0/1734416267206?e=1758758400&v=beta&t=W2gZN4T_Ix1bG9JIo2gPJClmrDrIbf60J3NAC5nuBdU",
-                "vacancies": 7,
-                "company_name": "Meta",
-                "location": "USA"
-            }
-        ]
+        }
+        res.status(201).json(data)
 
     }
-    res.status(201).json(data)
-}
+
+    console.log("Response from OpenAI:", filteredReferers);
+};
 
 
 exports.verifySeekerInfoForSession = function(req, res, next){
