@@ -18,7 +18,6 @@ exports.verifySeekerInfoForSession = function(req, res, next){
     .then((stripeData) => {
         if (stripeData.data.length > 0) {
             var userData = stripeData.data[0]
-            console.log(userData);
 
             // userToken.findByUserId(userData.user_id)
             // .then((data) => {

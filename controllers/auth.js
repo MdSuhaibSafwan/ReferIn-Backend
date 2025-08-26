@@ -1,14 +1,16 @@
 const dotenv = require('dotenv')
 const User = require('../models/user');
 const UserToken = require('../models/token');
+const stripeSession = require("../models/payment")
 const axios = require('axios');
 const jwtDecode = require('jwt-decode');
+const StripeSession = require('../models/payment');
 
 dotenv.config();
 
 exports.linkedInAuth = (req, res, next) => {
     const scope = 'openid profile email';
-    var stateData = {"redirectionUrl": req.body.redirection_url, "getToken": req.body.get_token}
+    var stateData = {"redirectionUrl": req.body.redirection_url, "getToken": req.body.get_token, "stripeSessionId": req.body.session_id, "metaUid": req.body.meta_uid}
     const state = encodeURIComponent(JSON.stringify(stateData));
     var url = process.env.LINKEDIN_REDIRECT_URI;
     const authURL = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${process.env.LINKEDIN_CLIENT_ID}&redirect_uri=${encodeURIComponent(url)}&state=${state}&scope=${encodeURIComponent(scope)}`;
@@ -21,6 +23,8 @@ exports.linkedInCallback = async (req, res) => {
       const code = req.query.code;
       const state = req.query.state;
       const stateData = JSON.parse(decodeURIComponent(state));
+      const sessionId = stateData.stripeSessionId;
+      const metaUid = stateData.metaUid;
       var redirectionUri = stateData.redirectionUrl;
       var getToken = stateData.getToken;
       if (!code) return res.status(400).send('No code returned from LinkedIn');
@@ -62,6 +66,9 @@ exports.linkedInCallback = async (req, res) => {
               if (getToken){
                 redirectionUri = `${redirectionUri}&token=${userToken}`
               }
+
+              StripeSession.insertSession({"session_id": sessionId, "meta_uid": metaUid, "user_id": userId});
+
               res.redirect(`${redirectionUri}`);
           })
 

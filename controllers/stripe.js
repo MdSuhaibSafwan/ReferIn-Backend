@@ -32,11 +32,13 @@ exports.stripeWebhook = (request, response) => {
             session_id: session.id,
             meta_uid: frontendUid
         }
-        StripeSession.insertSession(sessionData)
-        .then((resp) => {
-            response.status(200).send({"message": "success"});
-        })
-        .catch(err => console.log(err));
+
+        // it should be has paid = true
+        // StripeSession.insertSession(sessionData)
+        // .then((resp) => {
+        //     response.status(200).send({"message": "success"});
+        // })
+        // .catch(err => console.log(err));
 
 
     } else {
