@@ -25,20 +25,28 @@ exports.stripeWebhook = (request, response) => {
         var session = event.data.object;
         var metaData = session.metadata;
         var frontendUid = metaData.frontendUid || null;
-        var userId = metaData.user_id || null
-        
-        var sessionData = {
-            user_id: userId,
-            session_id: session.id,
-            meta_uid: frontendUid
-        }
+        if (frontendUid == null){
+            return response.status(200).send({"message": "no frontend uid found"});
+        } else {
+            // it should be has paid = true
+            StripeSession.findSessionByUid(frontendUid)
+            .then((resp) => {
+                if (resp.data.length > 0){
+                    var sessionObjId = resp.data[0].id;
+                    StripeSession.updateSession(sessionObjId, {"has_paid": true})
+                    .then((resp) => {
+                        if (resp.data.length > 0){
+                            response.status(200).send({"message": "has been paid successfully"});
+                        } else {
+                            return response.status(404).send({"message": "no session found"});
+                        }
+                    })
+                } else {
+                    return response.status(404).send({"message": "no session found"});
+                }
+            })
+        };
 
-        // it should be has paid = true
-        // StripeSession.insertSession(sessionData)
-        // .then((resp) => {
-        //     response.status(200).send({"message": "success"});
-        // })
-        // .catch(err => console.log(err));
 
 
     } else {
