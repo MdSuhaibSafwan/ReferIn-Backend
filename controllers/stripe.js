@@ -7,6 +7,7 @@ dotenv.config();
 exports.stripeWebhook = (request, response) => {
     let event = request.body;
     var endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+    console.log("Webhook called: " + endpointSecret);
     if (endpointSecret) {
         const signature = request.headers['stripe-signature'];
         try {
