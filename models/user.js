@@ -19,6 +19,12 @@ class User {
       return await this.getOrCreate(data);
     }
   }
+
+  static async findById(id){
+    return await supabase.from("users").select("*").eq(
+      "id", id
+    );
+  }
 }
 
 module.exports = User;

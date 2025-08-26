@@ -52,4 +52,26 @@ exports.stripeWebhook = (request, response) => {
     } else {
         response.status(200).send({"message": "other event type handled"});
     };
-}
+};
+
+
+exports.createCheckoutSession = async (req, res, next) => {
+    console.log(req.user);
+    var metaUid = req.body.meta_uid;
+    var sessionId = req.body.session_id;
+    StripeSession.insertSession({"meta_uid": metaUid, "session_id": sessionId, "user_id": req.user.id})
+    .then((resp) => {
+        var data = {
+            "message": "Accepted",
+            "data": resp.data
+        }
+        res.status(201).json(data)
+    })
+    .catch((err) => {
+        var data = {
+            "message": "Error",
+            "data": err
+        }
+        res.status(400).json(data)
+    })
+};
