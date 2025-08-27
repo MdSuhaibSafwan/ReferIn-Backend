@@ -1,8 +1,8 @@
 
 exports.checkSeekerCountViaCompany = function(req, res, next){
     var data = {
-        "match_found": false,
-        "total_matches": 0
+        "match_found": true,
+        "total_matches": 5
     };
 
     res.status(200).json(data);
