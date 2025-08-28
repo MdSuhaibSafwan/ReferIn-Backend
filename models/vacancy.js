@@ -5,7 +5,7 @@ class Vacancy {
     return await supabase.from("vacancy").select("*");
   }
   static async insert(data) {
-    let userData = await supabase.from("vacancy").insert(data);
+    let userData = await supabase.from("vacancy").insert(data).select();
     return userData
   }
 
