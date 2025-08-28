@@ -25,6 +25,14 @@ class User {
       "id", id
     );
   }
+
+  static async findByArray(idArray){
+    return await supabase
+      .from("users")
+      .select("*")
+      .in("id", idArray);
+  }
+
 }
 
 module.exports = User;

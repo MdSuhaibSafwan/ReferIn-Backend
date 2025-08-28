@@ -4,7 +4,8 @@ const mammoth = require("mammoth");
 const pdfParse = require("pdf-parse");
 const fs = require("fs");
 const {JSDOM, } = require("jsdom")
-
+const chromium = require("@sparticuz/chromium");
+const puppeteer = require("puppeteer-core");
 
 async function extractTextFromFile(filePath) {
   const ext = path.extname(filePath).toLowerCase();
@@ -21,9 +22,6 @@ async function extractTextFromFile(filePath) {
   }
 }
 
-
-const chromium = require("@sparticuz/chromium");
-const puppeteer = require("puppeteer-core");
 
 async function extractTextFromUrl(url) {
   // Launch headless Chromium

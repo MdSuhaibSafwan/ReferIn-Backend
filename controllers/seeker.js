@@ -1,48 +1,41 @@
 var StripeSession = require("../models/payment");
 var userToken = require("../models/token");
+const User = require("../models/user");
 var client = require("../services/openaiClient");
+const VacancyAI = require("../services/vacancyAI");
+
 
 async function getReferersFromDB({ job_url=null, job_title=null, company_name=null }) {
   console.log("Fetching referers from DB for:", { job_url, job_title, company_name });
+  var aiResponse = await VacancyAI.vacancyMatch({ job_url, job_title, company_name });
+  if ((aiResponse == null)){
+    return [];
+  } else {
+    if (aiResponse.matches.length == 0){
+        return [];
+    } else{
+        var userIdArray = Array();
+        aiResponse.matches.forEach(element => {
+            if (!userIdArray.includes(element.user_id)){
+                userIdArray.push(element.user_id);
+            };
+        });
+        var userData = await User.findByArray(userIdArray);
+        userData.data.forEach(each => {
+            each.name = each.full_name;
+            each.company = "Google";
+            each.role = "Backend Engineer";
+            each.photo = each.picture;
+            each.location = "Bangladesh";
+            each.linkedin = "https://www.linkedin.com/in/tafsirul-islam-b6b593338/";
+            each.vacancies = "5";
+        });
+        console.log(userData.data);
 
-  return [
-    {
-        name: "Alice Johnson", 
-        company: "Google", 
-        role: "Backend Engineer", 
-        photo: "https://media.licdn.com/dms/image/v2/D5603AQGwIRxoiwakTw/profile-displayphoto-shrink_400_400/B56ZPTQ_SsHoAg-/0/1734416267206?e=1758758400&v=beta&t=W2gZN4T_Ix1bG9JIo2gPJClmrDrIbf60J3NAC5nuBdU", 
-        location: "USA", 
-        vacancies: "5", 
-        linkedin: "https://linkedin.com/in/alice" 
-    },
-    { 
-        name: "Bob Smith", 
-        company: "Microsoft", 
-        role: "Electrical Engineer", 
-        photo: "https://media.licdn.com/dms/image/v2/D5603AQGwIRxoiwakTw/profile-displayphoto-shrink_400_400/B56ZPTQ_SsHoAg-/0/1734416267206?e=1758758400&v=beta&t=W2gZN4T_Ix1bG9JIo2gPJClmrDrIbf60J3NAC5nuBdU", 
-        location: "USA", 
-        vacancies: "5", 
-        linkedin: "https://linkedin.com/in/bob" 
-    },
-    { 
-        name: "John Smith", 
-        company: "Google", 
-        role: "Manager of Google Tech Team", 
-        photo: "https://media.licdn.com/dms/image/v2/D5603AQGwIRxoiwakTw/profile-displayphoto-shrink_400_400/B56ZPTQ_SsHoAg-/0/1734416267206?e=1758758400&v=beta&t=W2gZN4T_Ix1bG9JIo2gPJClmrDrIbf60J3NAC5nuBdU", 
-        location: "USA", 
-        vacancies: "5", 
-        linkedin: "https://linkedin.com/in/john" 
-    },
-    { 
-        name: "John Doe", 
-        company: "Google", 
-        role: "Software Engineer", 
-        photo: "https://media.licdn.com/dms/image/v2/D5603AQGwIRxoiwakTw/profile-displayphoto-shrink_400_400/B56ZPTQ_SsHoAg-/0/1734416267206?e=1758758400&v=beta&t=W2gZN4T_Ix1bG9JIo2gPJClmrDrIbf60J3NAC5nuBdU", 
-        location: "USA", 
-        vacancies: "5", 
-        linkedin: "https://linkedin.com/in/doe" 
-    },
-  ]
+        return userData.data;
+    };
+
+  }
 }
 
 
@@ -69,27 +62,6 @@ exports.checkMatchesOfReferer = async (req, res, next) => {
 
     result = JSON.stringify(result);
 
-    var input = [
-        {
-            role: "system",
-            content: instructions,
-        },
-        {
-            role: "user",
-            content: `Seeker Input: ${JSON.stringify(seekerInput)}
-            Referers Data: ${result}
-            Instructions:
-            - Always respond in JSON array format like [referer1_data, referer2_data, ...] it shouldn't say {"matched_referers": [referer1_data, referer2_data, ...]}
-            - If no matches, return empty array.
-        `
-        }
-    ];
-
-    var response = await client.responses.create({
-        model: "gpt-3.5-turbo",
-        input: input
-    });
-
     try{
         // var filteredReferers = JSON.parse(response.output_text);
         var data = {
@@ -114,12 +86,17 @@ exports.checkMatchesOfReferer = async (req, res, next) => {
         res.status(201).json(data)
 
     }
-
-    console.log("Response from OpenAI:", filteredReferers);
 };
 
 
 exports.verifySeekerInfoForSession = function(req, res, next){
+
+    
+
+
+
+
+
     var frontendUid = req.body.frontendUid;
     StripeSession.findSessionByUid(frontendUid)
     .then((stripeData) => {
