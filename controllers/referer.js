@@ -1,7 +1,7 @@
 const Vacancy = require("../models/vacancy");
 const path = require("path");
-const extractFileData = require("../services/extractFileData");
-const parseVacancy = require("../services/parseVacancyData");
+const ExtractText = require("../services/extractText");
+const VacancyAI = require("../services/vacancyAI");
 
 
 exports.checkSeekerCountViaCompany = function(req, res, next){
@@ -22,29 +22,29 @@ exports.sendSessionInfoWithParams = function(req, res, next){
 }
 
 exports.sendVacancyData = async (req, res, next) => {
-    console.log(req.body);
     var jobSpecUrl = req.body.job_spec_url;
     var jobTitle = req.body.job_title;
     var vacancyFile = req.file;
 
-    console.log(jobSpecUrl, jobTitle, vacancyFile);
-    console.log("\n");
+    if (vacancyFile) {
+        var fileName = vacancyFile.originalname;
+        const filePath = path.join(__dirname, "..", "uploads", fileName);
+        var fileData = await ExtractText.extractTextFromFile(filePath)
+        
+        var openAiResponse = await VacancyAI.parseJobDetails(fileData);
 
-    var fileName = vacancyFile.originalname;
-    const filePath = path.join(__dirname, "..", "uploads", fileName);
-    var fileData = await extractFileData(filePath)
-    
-    var openAiResponse = await parseVacancy(fileData);
+    } else {
+        var openAiResponse = await VacancyAI.parseJobDetailsFromUrl(jobSpecUrl);
+    };
 
     var vacancyData = {
-        "job_title": "Software Developer",
-        "company_name": "Microsoft",
-        "country": "India",
-        "is_remote": true,
-        "description": "We need a Software Developer to join our team urgently",
+        "job_title": openAiResponse.job_title,
+        "company_name": openAiResponse.company_name,
+        "country": openAiResponse.country,
+        "is_remote": openAiResponse.is_remote,
+        "description": openAiResponse.summary,
         "user_id": req.user.id,
     }
-
     var resp = await Vacancy.insert(vacancyData);    
     var data = {
         "message": "vacancy add successfull",
