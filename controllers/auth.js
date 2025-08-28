@@ -27,13 +27,13 @@ exports.linkedInAuth = (req, res, next) => {
 
 exports.linkedInCallback = async (req, res) => {
       const code = req.query.code;
-      var getToken = stateData.getToken;
       if (!code) return res.status(400).send('No code returned from LinkedIn');
       
       const state = req.query.state;
       const stateData = JSON.parse(decodeURIComponent(state));
       const sessionId = stateData.stripeSessionId;
       const metaUid = stateData.metaUid;
+      var getToken = stateData.getToken;
       var redirectionUri = stateData.redirectionUrl;
       var userType = stateData.userType;
       try {
