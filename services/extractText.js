@@ -22,17 +22,26 @@ async function extractTextFromFile(filePath) {
 }
 
 
-const puppeteer = require("puppeteer");
+const chromium = require("@sparticuz/chromium");
+const puppeteer = require("puppeteer-core");
 
 async function extractTextFromUrl(url) {
-  const browser = await puppeteer.launch({ headless: true });
+  // Launch headless Chromium
+  const browser = await puppeteer.launch({
+    args: chromium.args,
+    defaultViewport: chromium.defaultViewport,
+    executablePath: await chromium.executablePath(),
+    headless: chromium.headless,
+  });
+
   const page = await browser.newPage();
-  await page.goto(url, { waitUntil: "networkidle2" }); // waits for JS to load
+  await page.goto(url, { waitUntil: "networkidle2" });
+
+  // Extract page content
   const text = await page.evaluate(() => document.body.innerText);
+
   await browser.close();
-  var respText = text.replace(/\s+/g, " ").trim();
-  console.log(respText);
-  return respText;
+  return text;
 }
 
 module.exports.extractTextFromFile = extractTextFromFile;

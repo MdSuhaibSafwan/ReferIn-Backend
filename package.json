@@ -13,6 +13,7 @@
   "dependencies": {
     "@clerk/clerk-sdk-node": "^5.1.6",
     "@clerk/express": "^1.7.24",
+    "@sparticuz/chromium": "^138.0.2",
     "@supabase/supabase-js": "^2.56.0",
     "axios": "^1.11.0",
     "body-parser": "^2.2.0",
@@ -24,10 +25,12 @@
     "multer": "^2.0.2",
     "node-fetch": "^3.3.2",
     "nodemon": "^3.1.10",
+    "nvm": "^0.0.4",
     "openai": "^5.15.0",
     "pdf-parse": "^1.1.1",
     "pg": "^8.16.3",
     "puppeteer": "^24.17.0",
+    "puppeteer-core": "^24.17.0",
     "querystring": "^0.2.1",
     "stripe": "^18.4.0",
     "vercel": "^46.0.2"
