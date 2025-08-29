@@ -8,6 +8,16 @@ const StripeSession = require('../models/payment');
 
 dotenv.config();
 
+
+async function addParamToUrl(url, key, value) {
+  let parsedUrl = new URL(url);
+
+  // Add or update param
+  parsedUrl.searchParams.set(key, value);
+
+  return parsedUrl.toString();
+}
+
 exports.linkedInAuth = (req, res, next) => {
     const scope = 'openid profile email';
     var stateData = {
@@ -74,7 +84,7 @@ exports.linkedInCallback = async (req, res) => {
             .then((resp) => {
               var userToken = resp.data[0].id;
               if (getToken){
-                redirectionUri = `${redirectionUri}&token=${userToken}`
+                redirectionUri = addParamToUrl(redirectionUri, "token", userToken);
               }
 
               res.redirect(`${redirectionUri}`);
