@@ -3,6 +3,7 @@ var userToken = require("../models/token");
 const User = require("../models/user");
 var client = require("../services/openaiClient");
 const VacancyAI = require("../services/vacancyAI");
+const Seeker = require("../models/seeker");
 
 
 async function getReferersFromDB({ job_url=null, job_title=null, company_name=null }) {
@@ -157,9 +158,12 @@ exports.verifySeekerInfoForSession = function(req, res, next){
             res.status(201).json(data)
         }
     })
-
-    // var data = {
-        
-    // }
-    // res.status(200).json(data);
 }
+
+exports.seekerMarketplace = async function seekerMarketplace(req, res, next) {
+    var seekerData = await Seeker.fetchAll();
+
+    res.status(200).json({
+        "data": seekerData.data,
+    });
+};
