@@ -111,7 +111,16 @@ exports.linkedInCallback = async (req, res) => {
             .then((resp) => {
               var userToken = resp.data[0].id;
               if (getToken){
-                redirectionUri = `${redirectionUri}&token=${userToken}`;
+
+                addParamToUrl(redirectionUri, "token", userToken)
+                .then((url) => {
+                  redirectionUri = url;
+                  console.log(redirectionUri);
+                  res.redirect(`${redirectionUri}`);
+                })
+                .catch((err) => {
+                  console.error(err);
+                });
               };
 
               StripeSession.insertSession({"session_id": sessionId, "meta_uid": metaUid, "user_id": userId});
