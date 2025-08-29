@@ -84,10 +84,17 @@ exports.linkedInCallback = async (req, res) => {
             .then((resp) => {
               var userToken = resp.data[0].id;
               if (getToken){
-                redirectionUri = addParamToUrl(redirectionUri, "token", userToken);
+                addParamToUrl(redirectionUri, "token", userToken)
+                .then((url) => {
+                  redirectionUri = url;
+                  console.log(redirectionUri);
+                  res.redirect(`${redirectionUri}`);
+                })
+                .catch((err) => {
+                  console.error(err);
+                });
               }
 
-              res.redirect(`${redirectionUri}`);
           })
 
           .catch(err => console.log(err))
@@ -104,8 +111,8 @@ exports.linkedInCallback = async (req, res) => {
             .then((resp) => {
               var userToken = resp.data[0].id;
               if (getToken){
-                redirectionUri = `${redirectionUri}&token=${userToken}`
-              }
+                redirectionUri = `${redirectionUri}&token=${userToken}`;
+              };
 
               StripeSession.insertSession({"session_id": sessionId, "meta_uid": metaUid, "user_id": userId});
 
