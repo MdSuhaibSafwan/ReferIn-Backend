@@ -121,11 +121,12 @@ exports.linkedInCallback = async (req, res) => {
                 .catch((err) => {
                   console.error(err);
                 });
+              } else {
+                StripeSession.insertSession({"session_id": sessionId, "meta_uid": metaUid, "user_id": userId});
+                res.redirect(`${redirectionUri}`);
               };
 
-              StripeSession.insertSession({"session_id": sessionId, "meta_uid": metaUid, "user_id": userId});
 
-              res.redirect(`${redirectionUri}`);
           })
 
           .catch(err => console.log(err))
