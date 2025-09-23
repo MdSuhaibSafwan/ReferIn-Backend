@@ -1,4 +1,4 @@
-const Vacancy = require("../models/vacancy");
+const {Vacancy, } = require("../models/vacancy");
 const path = require("path");
 const ExtractText = require("../services/extractText");
 const VacancyAI = require("../services/vacancyAI");
