@@ -11,6 +11,6 @@ exports.getRefererSeeked = async (req, res, next) => {
         vacancyIdArrary.push(obj.vacancy_id);
     };
     var vacancyFetchedData = await Vacancy.findByArray(vacancyIdArrary);
-    var serializedResponse = await RefererVacancySerializer.serializeAll(vacancyFetchedData.data, withDetail=true);
+    var serializedResponse = await RefererVacancySerializer.serializeAll(vacancyFetchedData.data);
     return res.status(200).json(serializedResponse);
 };
