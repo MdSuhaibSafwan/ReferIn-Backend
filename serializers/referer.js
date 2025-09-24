@@ -1,6 +1,7 @@
 const {Vacancy, VacancyExperience, VacancyRequirement, VacancyResponsibility, VacancySkill, VacancySeekedBySeekers} = require("../models/vacancy");
 const User = require("../models/user");
-const Seeker = require("../models/seeker");
+const {Seeker, } = require("../models/seeker");
+const {SeekerSerializer, } = require("./seeker");
 
 
 class RefererVacancySerializer {
@@ -39,12 +40,12 @@ class RefererVacancySerializer {
         var seekersList = [];
 
         for (let obj of vacanciesSeeked.data){
-            let userData = await Seeker.findById(obj.seeker_id);
-            seekersList.push(userData.data);
+            let seekerData = await Seeker.findById(obj.seeker_id);
+            var seekerDetailData = await SeekerSerializer.serialize(seekerData.data[0])
+            seekersList.push(seekerDetailData);
         };
         var data = await this.serialize(vacancy);
-        data["seekersList"] = seekersList;
-    
+        data["seekersList"] = seekersList
         return data;
     }
 
