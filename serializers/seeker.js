@@ -7,7 +7,6 @@ class SeekerSerializer {
         var skills = await SeekerSkill.findBySeekerId(seeker.id);
         var educations = await SeekerEducation.findBySeekerId(seeker.id);
         var workExperiences = await SeekerWorkExperience.findBySeekerId(seeker.id);
-
         var data = {
             "id": seeker.id,
             "email": seeker.email,
@@ -25,7 +24,8 @@ class SeekerSerializer {
     static async serializeAll(seekers){
         var data = []
         for (let seeker of seekers){
-            data.push(await this.serialize(seeker));
+            let serializedSeekerData = await this.serialize(seeker)
+            data.push(serializedSeekerData);
         }
         return data;
     }
