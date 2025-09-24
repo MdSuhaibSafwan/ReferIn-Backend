@@ -15,6 +15,13 @@ class Vacancy {
       "id", id
     );
   }
+  static async findByArray(ids) {
+    return await supabase
+      .from("vacancy")
+      .select("*")
+      .in("id", ids);
+  }
+
 }
 
 class VacancyRequirement {
@@ -94,6 +101,12 @@ class VacancySeekedBySeekers {
   static async findByVacancyId(vacancyId){
     return await supabase.from("vacancy_seeked_by_seekers").select("*").eq(
       "vacancy_id", vacancyId
+    );
+  }
+
+  static async findBySeekerId(seekerId){
+    return await supabase.from("vacancy_seeked_by_seekers").select("*").eq(
+      "seeker_id", seekerId
     );
   }
 }

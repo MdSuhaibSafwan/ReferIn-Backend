@@ -1,5 +1,6 @@
 const {Vacancy, VacancyExperience, VacancyRequirement, VacancyResponsibility, VacancySkill, VacancySeekedBySeekers} = require("../models/vacancy");
 const User = require("../models/user");
+const Referer = require("../models/referer");
 const {Seeker, } = require("../models/seeker");
 const {SeekerSerializer, } = require("./seeker");
 
@@ -10,6 +11,7 @@ class RefererVacancySerializer {
         var experiences = await VacancyExperience.findByVacancyId(vacancy.id);
         var responsibilities = await VacancyResponsibility.findByVacancyId(vacancy.id);
         var skills = await VacancySkill.findByVacancyId(vacancy.id);
+        var referrer_data = await Referer.findById(vacancy.referrer_id);
 
         var data = {
             "id": vacancy.id,
@@ -18,7 +20,7 @@ class RefererVacancySerializer {
             "country": vacancy.country,
             "is_remote": vacancy.is_remote,
             "description": vacancy.description,
-            "user_id": vacancy.user_id,
+            "referrer_data": referrer_data.data,
             "requirements": requirements.data,
             "experiences": experiences.data,
             "responsibilities": responsibilities.data,
@@ -27,10 +29,14 @@ class RefererVacancySerializer {
         return data;
     }
 
-    static async serializeAll(vacancies){
+    static async serializeAll(vacancies, withDetail=false){
         var data = []
         for (let vacancy of vacancies){
-            data.push(await this.serialize(vacancy));
+            if (withDetail){
+                data.push(await this.serializeWithDetail(vacancy));
+            } else{
+                data.push(await this.serialize(vacancy));
+            }
         }
         return data;
     }
