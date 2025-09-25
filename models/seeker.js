@@ -26,6 +26,12 @@ class Seeker {
     );
   }
 
+  static async findByUserId(userId){
+    return await supabase.from("seeker").select("*").eq(
+      "user_id", userId
+    );
+  }
+
   static async findByArray(idArray){
     return await supabase
       .from("seeker")

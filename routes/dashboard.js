@@ -1,13 +1,16 @@
 const express = require("express");
 const refererDashboard = require("../controllers/dashboard/referer");
 const seekerDashboard = require("../controllers/dashboard/seeker");
+const authMiddleware = require("../services/authMiddleware");
+const refererMiddleware = require("../services/refererMiddleware");
+const seekerMiddleware = require("../services/seekerMiddleware");
 
 const router = express.Router();
-router.get("/referer/get-vacancies", refererDashboard.getVacancies);
-router.get("/referer/get-vacancy-detail/:id", refererDashboard.getVacancyDetail);
-router.get("/referer/potential-candidates", refererDashboard.getPotentialCandidates);
+router.get("/referer/get-vacancies", authMiddleware, refererMiddleware, refererDashboard.getVacancies);
+router.get("/referer/get-vacancy-detail/:id", authMiddleware, refererMiddleware, refererDashboard.getVacancyDetail);
+router.get("/referer/potential-candidates", authMiddleware, refererMiddleware, refererDashboard.getPotentialCandidates);
 
-router.get("/seeker/get-potential-opportunities", seekerDashboard.getRefererSeeked);
-router.get("/seeker/get-seeked-opportunities", seekerDashboard.getRefererSeeked);
+router.get("/seeker/get-potential-opportunities", authMiddleware, seekerDashboard.getRefererSeeked);
+router.get("/seeker/get-seeked-opportunities", authMiddleware, seekerDashboard.getRefererSeeked);
 
 module.exports = router;

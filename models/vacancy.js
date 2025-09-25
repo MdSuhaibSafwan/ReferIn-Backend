@@ -15,6 +15,13 @@ class Vacancy {
       "id", id
     );
   }
+
+  static async findByRefererId(refererId){
+    return await supabase.from("vacancy").select("*").eq(
+      "referrer_id", refererId
+    );
+  }
+
   static async findByArray(ids) {
     return await supabase
       .from("vacancy")

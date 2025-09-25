@@ -5,8 +5,7 @@ const {Seeker, } = require("../../models/seeker");
 
 
 exports.getVacancies = async (req, res, next) => {
-    var vacancyFetchedData = await Vacancy.fetchAll();
-
+    var vacancyFetchedData = await Vacancy.findByRefererId(req.referer.id);
     var resultData = await RefererVacancySerializer.serializeAll(vacancyFetchedData.data)
     res.status(200).json(resultData);
 };

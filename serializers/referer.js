@@ -4,6 +4,16 @@ const Referer = require("../models/referer");
 const {Seeker, } = require("../models/seeker");
 const {SeekerSerializer, } = require("./seeker");
 
+class RefererSerializer {
+
+    static async serializeById(referer_id){
+        var refererFetchedData = await Referer.findById(referer_id)
+        var serializedRefererData = refererFetchedData.data[0];
+        var userFetchedData = await User.findById(serializedRefererData.user_id);
+        serializedRefererData["user"] = userFetchedData.data[0];
+        return serializedRefererData;
+    }
+}
 
 class RefererVacancySerializer {
     static async serialize(vacancy){
@@ -11,7 +21,7 @@ class RefererVacancySerializer {
         var experiences = await VacancyExperience.findByVacancyId(vacancy.id);
         var responsibilities = await VacancyResponsibility.findByVacancyId(vacancy.id);
         var skills = await VacancySkill.findByVacancyId(vacancy.id);
-        var referrer_data = await Referer.findById(vacancy.referrer_id);
+        var referrer_data = await RefererSerializer.serializeById(vacancy.referrer_id);
 
         var data = {
             "id": vacancy.id,
@@ -20,7 +30,7 @@ class RefererVacancySerializer {
             "country": vacancy.country,
             "is_remote": vacancy.is_remote,
             "description": vacancy.description,
-            "referrer_data": referrer_data.data,
+            "referrer_data": referrer_data,
             "requirements": requirements.data,
             "experiences": experiences.data,
             "responsibilities": responsibilities.data,
@@ -59,3 +69,4 @@ class RefererVacancySerializer {
 
 
 exports.RefererVacancySerializer = RefererVacancySerializer;
+exports.RefererSerializer = RefererSerializer;
