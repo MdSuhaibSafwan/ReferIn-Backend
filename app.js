@@ -2,6 +2,8 @@ const express = require('express');
 const apiRoutes = require('./api');
 const dotenv = require('dotenv');
 dotenv.config();
+const multer = require("multer");
+const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
 
 const authController = require('./controllers/auth');
 const stripeController = require('./controllers/stripe');
@@ -19,7 +21,24 @@ app.use((req, res, next) => {
     next();
 })
 
-app.post('/auth/linkedin', express.json(), express.urlencoded({ extended: true }), authController.linkedInAuth);
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, "/tmp"), // temp path (ignored)
+  filename: (req, file, cb) => cb(null, file.originalname),
+});
+
+// Override file handling: delete buffer after controller handles it
+const upload = multer({
+  storage,
+  fileFilter: (req, file, cb) => {
+    file.mimetype === "application/pdf"
+      ? cb(null, true)
+      : cb(new Error("Only PDF files are allowed!"), false);
+  },
+  limits: { fileSize: 100 * 1024 * 1024 }, // 10MB max
+});
+
+
+app.post('/auth/linkedin', upload.single("cv"), authController.linkedInAuth);
 app.get('/auth/linkedin/callback', authController.linkedInCallback);
 
 app.use('/api', apiRoutes);

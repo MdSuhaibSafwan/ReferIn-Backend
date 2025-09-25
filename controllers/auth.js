@@ -7,9 +7,9 @@ const stripeSession = require("../models/payment")
 const axios = require('axios');
 const jwtDecode = require('jwt-decode');
 const StripeSession = require('../models/payment');
+const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
 
 dotenv.config();
-
 
 async function addParamToUrl(url, key, value) {
   let parsedUrl = new URL(url);
@@ -20,8 +20,43 @@ async function addParamToUrl(url, key, value) {
   return parsedUrl.toString();
 }
 
-exports.linkedInAuth = (req, res, next) => {
+exports.linkedInAuth = async (req, res, next) => {
     const scope = 'openid profile email';
+    try {
+      if (req.file) {
+
+        const s3 = new S3Client({
+          region: process.env.S3_REGION, // "us-east-1"
+          endpoint: process.env.S3_ENDPOINT, // Supabase endpoint
+          credentials: {
+            accessKeyId: process.env.S3_ACCESS_KEY_ID,
+            secretAccessKey: process.env.S3_SECREY_ACCESS_KEY,
+          },
+          forcePathStyle: true, // important for non-AWS providers like Supabase
+        });
+
+        const bucketName = process.env.S3_BUCKET_NAME; // replace with your Supabase bucket name
+        const key = `resumes/${Date.now()}_${req.file.originalname}`;
+
+        const command = new PutObjectCommand({
+          Bucket: bucketName,
+          Key: key,
+          Body: req.file.buffer,
+          ContentType: req.file.mimetype,
+        });
+
+        await s3.send(command);
+
+        const fileUrl = `${process.env.S3_MEDIA_URL}/${bucketName}/${key}`;
+        console.log(fileUrl);
+      }
+    }
+    catch (err) {
+      console.error(err);
+      res.status(500).json({ error: err.message });
+      return 
+    }
+
     var stateData = {
       "redirectionUrl": req.body.redirection_url, 
       "getToken": req.body.get_token || false, 
