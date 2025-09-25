@@ -21,20 +21,17 @@ app.use((req, res, next) => {
     next();
 })
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, "/tmp"), // temp path (ignored)
-  filename: (req, file, cb) => cb(null, file.originalname),
-});
+const storage = multer.memoryStorage();
 
-// Override file handling: delete buffer after controller handles it
 const upload = multer({
   storage,
   fileFilter: (req, file, cb) => {
-    file.mimetype === "application/pdf"
-      ? cb(null, true)
-      : cb(new Error("Only PDF files are allowed!"), false);
+    if (file.mimetype === "application/pdf") {
+      cb(null, true);
+    } else {
+      cb(new Error("Only PDF files are allowed!"), false);
+    }
   },
-  limits: { fileSize: 100 * 1024 * 1024 }, // 10MB max
 });
 
 

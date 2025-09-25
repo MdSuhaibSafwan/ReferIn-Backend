@@ -3,7 +3,6 @@ const User = require('../models/user');
 const UserToken = require('../models/token');
 const Referer = require('../models/referer');
 const {Seeker, } = require('../models/seeker');
-const stripeSession = require("../models/payment")
 const axios = require('axios');
 const jwtDecode = require('jwt-decode');
 const StripeSession = require('../models/payment');
@@ -13,29 +12,32 @@ dotenv.config();
 
 async function addParamToUrl(url, key, value) {
   let parsedUrl = new URL(url);
-
-  // Add or update param
   parsedUrl.searchParams.set(key, value);
-
   return parsedUrl.toString();
 }
 
 exports.linkedInAuth = async (req, res, next) => {
     const scope = 'openid profile email';
+    var stateData = {
+      "redirectionUrl": req.body.redirection_url, 
+      "getToken": req.body.get_token || false, 
+      "stripeSessionId": req.body.session_id || "", 
+      "metaUid": req.body.meta_uid || "", 
+      "userType": req.body.user_type || "referrer",
+    }
     try {
       if (req.file) {
-
         const s3 = new S3Client({
-          region: process.env.S3_REGION, // "us-east-1"
-          endpoint: process.env.S3_ENDPOINT, // Supabase endpoint
+          region: process.env.S3_REGION,
+          endpoint: process.env.S3_ENDPOINT,
           credentials: {
             accessKeyId: process.env.S3_ACCESS_KEY_ID,
             secretAccessKey: process.env.S3_SECREY_ACCESS_KEY,
           },
-          forcePathStyle: true, // important for non-AWS providers like Supabase
+          forcePathStyle: true,
         });
 
-        const bucketName = process.env.S3_BUCKET_NAME; // replace with your Supabase bucket name
+        const bucketName = process.env.S3_BUCKET_NAME;
         const key = `resumes/${Date.now()}_${req.file.originalname}`;
 
         const command = new PutObjectCommand({
@@ -44,10 +46,10 @@ exports.linkedInAuth = async (req, res, next) => {
           Body: req.file.buffer,
           ContentType: req.file.mimetype,
         });
-
         await s3.send(command);
 
         const fileUrl = `${process.env.S3_MEDIA_URL}/${bucketName}/${key}`;
+        stateData["cvUrl"] = fileUrl;
         console.log(fileUrl);
       }
     }
@@ -55,15 +57,8 @@ exports.linkedInAuth = async (req, res, next) => {
       console.error(err);
       res.status(500).json({ error: err.message });
       return 
-    }
-
-    var stateData = {
-      "redirectionUrl": req.body.redirection_url, 
-      "getToken": req.body.get_token || false, 
-      "stripeSessionId": req.body.session_id || "", 
-      "metaUid": req.body.meta_uid || "", 
-      "userType": req.body.user_type || "referrer",
-    }
+    };
+  
     const state = encodeURIComponent(JSON.stringify(stateData));
     var url = process.env.LINKEDIN_REDIRECT_URI;
     const authURL = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${process.env.LINKEDIN_CLIENT_ID}&redirect_uri=${encodeURIComponent(url)}&state=${state}&scope=${encodeURIComponent(scope)}`;
@@ -85,6 +80,8 @@ exports.linkedInCallback = async (req, res) => {
   var getToken = stateData.getToken;
   var redirectionUri = stateData.redirectionUrl;
   var userType = stateData.userType;
+  var cvUrl = stateData.cvUrl;
+  console.log(cvUrl)
 
   try {
     const tokenResponse = await axios.post(
