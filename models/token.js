@@ -17,7 +17,9 @@ class UserToken {
     )
   }
   static async insert(data) {
-    return await supabase.from("user_token").insert(data);
+    return await supabase.from("user_token").insert(data).select("*").eq(
+        "user_id", data.user_id
+    );
   }
 
   static async getOrCreate(data) {

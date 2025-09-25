@@ -5,15 +5,17 @@ class Seeker {
     return await supabase.from("seeker").select("*");
   }
   static async insert(data) {
-    let userData = await supabase.from("seeker").insert(data);
+    let userData = await supabase.from("seeker").insert(data).select("*").eq(
+      "user_id", data.user_id
+    );
     return userData
   }
   static async getOrCreate(data) {
-    var user = await supabase.from("seeker").select("*").eq(
-      "email", data.email
+    var seeker = await supabase.from("seeker").select("*").eq(
+      "user_id", data.user_id
     );
-    if (user.data.length > 0) {
-      return user;
+    if (seeker.data.length > 0) {
+      return seeker;
     } else {
       await this.insert(data);
       return await this.getOrCreate(data);

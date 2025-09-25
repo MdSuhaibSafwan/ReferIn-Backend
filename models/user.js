@@ -5,7 +5,9 @@ class User {
     return await supabase.from("users").select("*");
   }
   static async insert(data) {
-    let userData = await supabase.from("users").insert(data);
+    let userData = await supabase.from("users").insert(data).select("*").eq(
+      "email", data.email
+    );
     return userData
   }
   static async getOrCreate(data) {
@@ -23,6 +25,12 @@ class User {
   static async findById(id){
     return await supabase.from("users").select("*").eq(
       "id", id
+    );
+  }
+
+  static async findByEmail(email){
+    return await supabase.from("users").select("*").eq(
+      "email", email
     );
   }
 
