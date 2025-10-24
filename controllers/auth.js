@@ -3,10 +3,12 @@ const User = require('../models/user');
 const UserToken = require('../models/token');
 const Referer = require('../models/referer');
 const {Seeker, } = require('../models/seeker');
+const {UserTokenSerializer, } = require("../serializers/token");
 const axios = require('axios');
 const jwtDecode = require('jwt-decode');
 const StripeSession = require('../models/payment');
 const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
+const jwt = require("jsonwebtoken")
 
 dotenv.config();
 
@@ -18,6 +20,12 @@ async function addParamToUrl(url, key, value) {
 
 exports.linkedInAuth = async (req, res, next) => {
     const scope = 'openid profile email';
+    console.log("Body ", req.body);
+    console.log("Redirection URL -> ", req.body.redirection_url);
+    if (!req.body.redirection_url) {
+      return res.status(400).json({ error: 'Redirection URL is required' });
+    }
+
     var stateData = {
       "redirectionUrl": req.body.redirection_url, 
       "getToken": req.body.get_token || false, 
@@ -113,20 +121,11 @@ exports.linkedInCallback = async (req, res) => {
 
     var userFilter = await User.findByEmail(userJWTDecooded.email);
     if (userFilter.data.length > 0){
-      // If refferer or seeker redirect them to dashboard
       var user = userFilter.data[0];
-      var seekerFilter = await Seeker.findByUserId(user.id);
-      var seeker, referer;
-      if (seekerFilter.data.length > 0){
-        seeker = seekerFilter.data[0];
-        console.log("User a Seeker")
-      };
-      var refererFilter = await Referer.findByUserId(user.id);
-      if (refererFilter.data.length > 0){
-        referer = refererFilter.data[0];
-        console.log("User a Referer");
-      };
-
+      var tokenSerialized = await UserTokenSerializer.serializeByUserData(user);
+      const encodedCode = jwt.sign(tokenSerialized, process.env.JWT_SECRET,);
+      var url = await addParamToUrl(redirectionUri, "code", encodedCode);
+      res.redirect(url);
 
     } else {
       if (!userType) {
@@ -183,136 +182,6 @@ exports.linkedInCallback = async (req, res) => {
 
 };
 
-exports.linkedInCallback2 = async (req, res) => {
-      const code = req.query.code;
-      if (!code) return res.status(400).send('No code returned from LinkedIn');
-      
-      const state = req.query.state;
-      const stateData = JSON.parse(decodeURIComponent(state));
-      const sessionId = stateData.stripeSessionId;
-      const metaUid = stateData.metaUid;
-      var getToken = stateData.getToken;
-      var redirectionUri = stateData.redirectionUrl;
-      var userType = stateData.userType;
-      try {
-        const tokenResponse = await axios.post(
-          'https://www.linkedin.com/oauth/v2/accessToken',
-          new URLSearchParams({
-            grant_type: 'authorization_code',
-            code: code,
-            redirect_uri: process.env.LINKEDIN_REDIRECT_URI,
-            client_id: process.env.LINKEDIN_CLIENT_ID,
-            client_secret: process.env.LINKEDIN_CLIENT_SECRET,
-          }),
-          { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
-        );
-    
-        const accessToken = tokenResponse.data.access_token;
-        const idToken = tokenResponse.data.id_token;
-    
-        const user = jwtDecode.jwtDecode(idToken);
-    
-        var userData = {
-          "linkedin_aud": user.aud,
-          "linkedin_sub": user.sub,
-          "full_name": user.name, 
-          "given_name": user.given_name, 
-          "family_name": user.family_name, 
-          "picture": user.picture,
-          "email": user.email,
-        }
-
-      if (userType == "referrer") {
-        User.getOrCreate(userData)
-        .then((resp) => {
-          var data = resp.data[0];
-          var userId = data.id;
-          UserToken.getOrCreate({"user_id": userId})
-            .then((resp) => {
-              var userToken = resp.data[0].id;
-              if (getToken){
-                addParamToUrl(redirectionUri, "token", userToken)
-                .then((url) => {
-                  Referer.getOrCreate({
-                    "user_id": userId,
-                    "current_company": null,
-                    "location": null,
-                    "full_name": userData.full_name,
-                    "picture": userData.picture,
-                    "email": userData.email,
-                  })
-                  .then((resp) => {
-                    redirectionUri = url;
-                    console.log(redirectionUri);
-                    res.redirect(`${redirectionUri}`);
-                  })
-
-
-                })
-                .catch((err) => {
-                  console.error(err);
-                });
-              }
-
-          })
-
-          .catch(err => console.log(err))
-        })
-        .catch(err => console.log(err))
-
-
-      } else {
-        User.getOrCreate(userData)
-        .then((resp) => {
-          var data = resp.data[0];
-          var userId = data.id;
-          UserToken.getOrCreate({"user_id": userId})
-            .then((resp) => {
-              var userToken = resp.data[0].id;
-              if (getToken){
-
-                addParamToUrl(redirectionUri, "token", userToken)
-                .then((url) => {
-                  Seeker.getOrCreate({
-                    "user_id": userId,
-                    "email": userData.email,
-                    "picture": userData.picture,
-                    "full_name": userData.full_name,
-                  })
-                  .then((resp) => {
-                    redirectionUri = url;
-                    console.log(redirectionUri);
-                    res.redirect(`${redirectionUri}`);
-                  })
-
-                })
-                .catch((err) => {
-                  console.error(err);
-                });
-              } else {
-                StripeSession.insertSession({"session_id": sessionId, "meta_uid": metaUid, "user_id": userId});
-                res.redirect(`${redirectionUri}`);
-              };
-
-
-          })
-
-          .catch(err => console.log(err))
-        })
-        .catch(err => console.log(err))
-
-      }
-
-
-
-
-
-      } catch (err) {
-        console.error(err.response?.data || err.message);
-        res.status(500).send('Error during LinkedIn OAuth process');
-      }
-};
-
 
 exports.getAllUsers = (req, res, next) => {
 
@@ -329,3 +198,18 @@ exports.getAllUsers = (req, res, next) => {
   )
 }
  
+exports.signin = (req, res, next) => {
+    const scope = 'openid profile email';
+    var stateData = {
+      "redirectionUrl": req.body.redirection_url, 
+      "getToken": true, 
+    };
+    const state = encodeURIComponent(JSON.stringify(stateData));
+    var url = process.env.LINKEDIN_REDIRECT_URI;
+    const authURL = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${process.env.LINKEDIN_CLIENT_ID}&redirect_uri=${encodeURIComponent(url)}&state=${state}&scope=${encodeURIComponent(scope)}`;
+    res.status(200).json(
+        {"link": authURL}
+    );
+};
+
+
