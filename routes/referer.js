@@ -1,6 +1,6 @@
 const express = require('express');
 const refererController = require('../controllers/referer');
-const authMiddleware = require('../services/authMiddleware');
+const {authMiddleware, } = require('../middleware/authMiddleware');
 const multer = require("multer");
 
 const router = express.Router()

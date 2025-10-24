@@ -96,31 +96,32 @@ class VacancySkill {
   }
 }
 
-class VacancySeekedBySeekers {
+class VacancyMatch {
   static async fetchAll(){
-    return await supabase.from("vacancy_seeked_by_seekers").select("*");
+    return await supabase.from("vacancy_match").select("*");
   }
   static async insert(data) {
-    let userData = await supabase.from("vacancy_seeked_by_seekers").insert(data).select();
+    let userData = await supabase.from("vacancy_match").insert(data).select();
     return userData
   }
 
   static async findByVacancyId(vacancyId){
-    return await supabase.from("vacancy_seeked_by_seekers").select("*").eq(
+    return await supabase.from("vacancy_match").select("*").eq(
       "vacancy_id", vacancyId
     );
   }
 
   static async findBySeekerId(seekerId){
-    return await supabase.from("vacancy_seeked_by_seekers").select("*").eq(
+    return await supabase.from("vacancy_match").select("*").eq(
       "seeker_id", seekerId
     );
   }
 }
+
 
 exports.Vacancy = Vacancy;
 exports.VacancyRequirement = VacancyRequirement;
 exports.VacancyExperience = VacancyExperience;
 exports.VacancyResponsibility = VacancyResponsibility;
 exports.VacancySkill = VacancySkill;
-exports.VacancySeekedBySeekers = VacancySeekedBySeekers;
+exports.VacancyMatch = VacancyMatch;

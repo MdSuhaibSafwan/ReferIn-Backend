@@ -1,6 +1,6 @@
 const stripeController = require("../controllers/stripe");
 const { auth } = require("../db/supabase");
-const authMiddleware = require("../services/authMiddleware");
+const {authMiddleware, } = require("../middleware/authMiddleware");
 
 const express = require("express");
 const router = express.Router();
