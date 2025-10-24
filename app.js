@@ -3,11 +3,11 @@ const apiRoutes = require("./api");
 const dotenv = require("dotenv");
 const cors = require("cors");
 dotenv.config();
-const multer = require("multer");
-const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
+
+const AuthRoutes = require("./routes/auth");
 const jwt = require("jsonwebtoken");
 
-const authController = require("./controllers/auth");
+
 const stripeController = require("./controllers/stripe");
 // const assistant = require('./services/createAssistant');
 
@@ -25,18 +25,6 @@ app.post(
   stripeController.stripeWebhook
 );
 
-const storage = multer.memoryStorage();
-const upload = multer({
-  storage,
-  fileFilter: (req, file, cb) => {
-    if (file.mimetype === "application/pdf") {
-      cb(null, true);
-    } else {
-      cb(new Error("Only PDF files are allowed!"), false);
-    }
-  },
-});
-
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
@@ -44,12 +32,10 @@ app.use((req, res, next) => {
   next();
 });
 
-app.post(
-  "/auth/linkedin",
-  upload.single("cv"),
-  authController.linkedInAuth
+app.use(
+  "/auth", AuthRoutes,
 );
-app.get("/auth/linkedin/callback", authController.linkedInCallback);
+
 
 app.use("/api", apiRoutes);
 
