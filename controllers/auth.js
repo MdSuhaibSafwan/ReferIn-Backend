@@ -96,6 +96,7 @@ exports.linkedInCallback = async (req, res) => {
       };
       var userInsertData = {
         ...userLinkedInResponseData,
+        "user_type": userType,
         "current_situation": currentSituation,
         "current_employment": currentEmployment,
       }
@@ -144,19 +145,4 @@ exports.linkedInCallback = async (req, res) => {
   }
 
 };
- 
-exports.signin = (req, res, next) => {
-    const scope = 'openid profile email';
-    var stateData = {
-      "redirectionUrl": req.body.redirection_url, 
-      "getToken": true, 
-    };
-    const state = encodeURIComponent(JSON.stringify(stateData));
-    var url = process.env.LINKEDIN_REDIRECT_URI;
-    const authURL = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${process.env.LINKEDIN_CLIENT_ID}&redirect_uri=${encodeURIComponent(url)}&state=${state}&scope=${encodeURIComponent(scope)}`;
-    res.status(200).json(
-        {"link": authURL}
-    );
-};
-
 

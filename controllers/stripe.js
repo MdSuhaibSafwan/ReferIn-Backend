@@ -1,6 +1,7 @@
 const dotenv = require('dotenv')
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const StripeSession = require('../models/payment');
+const {v4: uuid4} = require("uuid");
 
 dotenv.config();
 
@@ -74,4 +75,43 @@ exports.createCheckoutSession = async (req, res, next) => {
         }
         res.status(400).json(data)
     })
+};
+
+
+exports.createStripeCheckoutSession = async (req, res, next) => {
+  const metaUid = uuid4();
+  try {
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      mode: "payment",
+      line_items: [
+        {
+          price: process.env.STRIPE_PRICE_ID,
+          quantity: 1,
+        },
+      ],
+      metadata: {
+        meta_uid: metaUid,
+        user_id: req.user.id || "",
+      },
+      success_url: process.env.STRIPE_SUCCESS_URL,
+      cancel_url: process.env.STRIPE_CANCEL_URL,
+    });
+
+    await StripeSession.insertSession({
+        "meta_uid": metaUid, 
+        "session_id": session.id, 
+        "user_id": req.user.id,
+        "has_paid": false,
+        "is_expired": false
+    })
+
+    res.json({ url: session.url });
+  } catch (err) {
+    console.error("Stripe error:", err);
+    res.status(500).json({ error: err.message });
+  }
+
+  
+
 };
