@@ -5,6 +5,7 @@ const cors = require("cors");
 dotenv.config();
 const multer = require("multer");
 const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
+const jwt = require("jsonwebtoken");
 
 const authController = require("./controllers/auth");
 const stripeController = require("./controllers/stripe");
@@ -24,6 +25,18 @@ app.post(
   stripeController.stripeWebhook
 );
 
+const storage = multer.memoryStorage();
+const upload = multer({
+  storage,
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === "application/pdf") {
+      cb(null, true);
+    } else {
+      cb(new Error("Only PDF files are allowed!"), false);
+    }
+  },
+});
+
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
@@ -33,8 +46,7 @@ app.use((req, res, next) => {
 
 app.post(
   "/auth/linkedin",
-  express.json(),
-  express.urlencoded({ extended: true }),
+  upload.single("cv"),
   authController.linkedInAuth
 );
 app.get("/auth/linkedin/callback", authController.linkedInCallback);
@@ -43,6 +55,9 @@ app.use("/api", apiRoutes);
 
 app.get("/", (req, res, next) => {
   var message = "Welcome to Referin AI API";
+  if (req.query.code) {
+    console.log(jwt.decode(req.query.code, process.env.JWT_SECRET))
+  };
   res.status(200).json({ message: message });
 });
 

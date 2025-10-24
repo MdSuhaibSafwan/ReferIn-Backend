@@ -8,7 +8,7 @@ const axios = require('axios');
 const jwtDecode = require('jwt-decode');
 const StripeSession = require('../models/payment');
 const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
-const jwt = require("jsonwebtoken")
+const jwt = require("jsonwebtoken");
 
 dotenv.config();
 
@@ -20,8 +20,7 @@ async function addParamToUrl(url, key, value) {
 
 exports.linkedInAuth = async (req, res, next) => {
     const scope = 'openid profile email';
-    console.log("Body ", req.body);
-    console.log("Redirection URL -> ", req.body.redirection_url);
+
     if (!req.body.redirection_url) {
       return res.status(400).json({ error: 'Redirection URL is required' });
     }
@@ -69,9 +68,9 @@ exports.linkedInAuth = async (req, res, next) => {
   
     const state = encodeURIComponent(JSON.stringify(stateData));
     var url = process.env.LINKEDIN_REDIRECT_URI;
-    const authURL = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${process.env.LINKEDIN_CLIENT_ID}&redirect_uri=${encodeURIComponent(url)}&state=${state}&scope=${encodeURIComponent(scope)}`;
+    const callbackUrl = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${process.env.LINKEDIN_CLIENT_ID}&redirect_uri=${encodeURIComponent(url)}&state=${state}&scope=${encodeURIComponent(scope)}`;
     res.status(200).json(
-        {"link": authURL}
+        {"link": callbackUrl}
     );
 };
 
@@ -89,7 +88,6 @@ exports.linkedInCallback = async (req, res) => {
   var redirectionUri = stateData.redirectionUrl;
   var userType = stateData.userType;
   var cvUrl = stateData.cvUrl;
-  console.log(cvUrl)
 
   try {
     const tokenResponse = await axios.post(
