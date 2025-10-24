@@ -36,6 +36,7 @@
     "puppeteer-core": "^24.17.0",
     "querystring": "^0.2.1",
     "stripe": "^18.4.0",
+    "uuid": "^13.0.0",
     "vercel": "^46.0.2"
   }
 }
