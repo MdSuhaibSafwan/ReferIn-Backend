@@ -39,7 +39,21 @@ class Seeker {
       .from("seeker")
       .select("*")
       .in("id", idArray);
+  };
+
+  static async update(identifier, data, by = "id") {
+    // identifier → can be id or user_id value
+    // by → which field to use for lookup ("id" or "user_id")
+
+    const result = await supabase
+      .from("seeker")
+      .update(data)
+      .eq(by, identifier)
+      .select("*");
+
+    return result;
   }
+
 };
 
 

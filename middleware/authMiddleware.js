@@ -1,6 +1,6 @@
 const Token = require("../models/token");
 const User = require("../models/user");
-const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
+const {uploadToS3, } = require("../services/upload_to_s3");
 
 
 exports.authMiddleware = function authMiddleware(req, res, next){
@@ -60,28 +60,7 @@ exports.linkedinSignInOrSignUpMiddleware = async function (req, res, next) {
 
     try {
       if (req.file) {
-        const s3 = new S3Client({
-          region: process.env.S3_REGION,
-          endpoint: process.env.S3_ENDPOINT,
-          credentials: {
-            accessKeyId: process.env.S3_ACCESS_KEY_ID,
-            secretAccessKey: process.env.S3_SECREY_ACCESS_KEY,
-          },
-          forcePathStyle: true,
-        });
-
-        const bucketName = process.env.S3_BUCKET_NAME;
-        const key = `resumes/${Date.now()}_${req.file.originalname}`;
-
-        const command = new PutObjectCommand({
-          Bucket: bucketName,
-          Key: key,
-          Body: req.file.buffer,
-          ContentType: req.file.mimetype,
-        });
-        await s3.send(command);
-
-        const fileUrl = `${process.env.S3_MEDIA_URL}/${bucketName}/${key}`;
+        var fileUrl = await uploadToS3(req.file)
         req.body["cvUrl"] = fileUrl;
       }
     }

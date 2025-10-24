@@ -4,6 +4,7 @@ const User = require("../models/user");
 var client = require("../services/openaiClient");
 const VacancyAI = require("../services/vacancyAI");
 const {Seeker, } = require("../models/seeker");
+const {uploadToS3, } = require("../services/upload_to_s3");
 
 
 async function getReferersFromDB({ job_url=null, job_title=null, company_name=null }) {
@@ -165,5 +166,21 @@ exports.seekerMarketplace = async function seekerMarketplace(req, res, next) {
 
     res.status(200).json({
         "data": seekerData.data,
+    });
+};
+
+
+exports.uploadCv = async function uploadCv(req, res, next) {
+    var seekerId = req.seeker.id;
+    console.log("Seeker ID -> ", seekerId);
+    var cvUrl = await uploadToS3(req.file);
+    console.log("CV URL -> ", cvUrl);
+    await Seeker.update(
+        seekerId, 
+        {"cv_url": cvUrl}
+    );
+    
+    res.status(200).json({
+        "message": "cv updated",
     });
 };
