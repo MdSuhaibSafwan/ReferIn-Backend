@@ -1,7 +1,8 @@
 const Token = require("../models/token");
 const User = require("../models/user");
 
-module.exports = function authMiddleware(req, res, next){
+
+exports.authMiddleware = function authMiddleware(req, res, next){
     var authToken = req.headers.authorization || null;
     if (authToken == null || authToken == undefined || authToken == "") {
         res.status(401).json({"message": "Unauthorized"});

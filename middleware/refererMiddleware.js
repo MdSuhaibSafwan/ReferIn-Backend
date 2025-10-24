@@ -3,7 +3,7 @@ const User = require("../models/user");
 const Referer = require("../models/referer");
 
 
-module.exports = async function refererMiddleware(req, res, next){
+exports.refererMiddleware = async function refererMiddleware(req, res, next){
     var userId = req.user.id;
     refererFetchedData = await Referer.findByUserId(userId)
     if (refererFetchedData.data.length == 0){
