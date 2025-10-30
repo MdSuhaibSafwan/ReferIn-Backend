@@ -6,20 +6,21 @@ dotenv.config();
 
 const AuthRoutes = require("./routes/auth");
 const jwt = require("jsonwebtoken");
-
-
 const stripeController = require("./controllers/stripe");
 // const assistant = require('./services/createAssistant');
 
 const app = express();
 
-// app.use(
-//   cors({
-//     origin: ["http://localhost:3000","https://www.referin.io"],
-//     origin: "*",
-//      credentials: false,
-//   })
-// );
+
+app.use(
+  cors({
+    origin: [
+      "http://localhost:3000",
+      "https://www.referin.io"
+    ],
+    credentials: false,
+  })
+);
 
 app.post(
   "/webhook",
@@ -27,18 +28,15 @@ app.post(
   stripeController.stripeWebhook
 );
 
-app.use((req, res, next) => {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-  res.setHeader("Access-Control-Allow-Methods", "*");
-  next();
-});
 
-app.use(
-  "/auth", AuthRoutes,
-);
+app.use(express.json());
+
+app.use(express.urlencoded({ extended: true }));
 
 
+
+// Route registration
+app.use("/auth", AuthRoutes);
 app.use("/api", apiRoutes);
 
 app.get("/", (req, res, next) => {
