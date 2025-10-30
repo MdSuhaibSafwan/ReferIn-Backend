@@ -16,7 +16,7 @@ const app = express();
 app.use(
   cors({
     origin: ["http://localhost:3000","https://www.referin.io"],
-    credentials: true,
+    credentials: false,
   })
 );
 
