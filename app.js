@@ -12,15 +12,26 @@ const stripeController = require("./controllers/stripe");
 const app = express();
 
 
-app.use(
-  cors({
-    origin: [
-      "http://localhost:3000",
-      "https://www.referin.io"
-    ],
-    credentials: false,
-  })
-);
+// app.use(
+//   cors({
+//     origin: [
+//       "http://localhost:3000",
+//       "https://www.referin.io"
+//     ],
+//     credentials: false,
+//   })
+// );
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+
+
+app.use((req, res, next) => {
+ res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+res.setHeader("Access-Control-Allow-Methods", "*");
+  next();
+ });
 
 app.post(
   "/webhook",
@@ -29,9 +40,7 @@ app.post(
 );
 
 
-app.use(express.json());
 
-app.use(express.urlencoded({ extended: true }));
 
 
 
