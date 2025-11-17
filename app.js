@@ -41,9 +41,6 @@ app.post(
 
 
 
-
-
-
 // Route registration
 app.use("/auth", AuthRoutes);
 app.use("/api", apiRoutes);
