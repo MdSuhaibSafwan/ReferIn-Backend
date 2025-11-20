@@ -1,21 +1,22 @@
 const express = require("express");
+const { login, logout } = require("../controllers/super-admin/adminauth.controller");
+const {
+  getAllJobs,
+  getJobById,
+  deleteJob,
+  createJob,
+} = require("../controllers/super-admin/jobs.controller");
 const router = express.Router();
 
 /**
  * * Super Admin Authentication Routes
- * These routes are for handling super admin login, registration, and session management.
+ * These routes are for handling super admin login,and logout.
  */
 
-router.post("/auth/login");
-
-//Registers a new super admin.
-router.post("/auth/register");
-
-//Refreshes the super admin's authentication token.
-router.post("/auth/refresh");
+router.post("/auth/login", login);
 
 // Logs out a super admin.
-router.post("/auth/logout");
+router.post("/auth/logout", logout);
 
 /**
  * *Job Management Routes
@@ -23,13 +24,16 @@ router.post("/auth/logout");
  */
 
 //get all the jobs
-router.get("/jobs");
+router.get("/jobs", getAllJobs);
+
+//create a single jobs with
+router.get("/jobs/create", createJob);
 
 //Get a single job vacancy by its ID.
-router.get("/jobs/:id");
+router.get("/jobs/:id", getJobById);
 
 // Delete a job vacancy by its ID.
-router.delete("/jobs/:id");
+router.delete("/jobs/:id", deleteJob);
 
 /**
  * *Referrer Management Routes
@@ -37,10 +41,10 @@ router.delete("/jobs/:id");
  */
 
 // Get a list of all referrers.
-router.get("/referrers");
+// router.get("/referrers");
 
 //Get a single referrer by their ID.
-router.get("/referrers/:id");
+// router.get("/referrers/:id");
 
 /**
  * *Seeker Management Routes
@@ -48,10 +52,18 @@ router.get("/referrers/:id");
  */
 
 //get all the Seekers data
-router.get("/seekers");
+// router.get("/seekers");
 
 //Get a single seeker by their ID.
-router.get("/seekers/:id");
+// router.get("/seekers/:id");
+
+/**
+ * *Dashboard overview
+ * These routes are for overview analytics
+ */
+
+//get all the quick analytics data
+// router.get("/quick-stats");
 
 /**
  * *Analytics Routes
@@ -59,54 +71,15 @@ router.get("/seekers/:id");
  */
 
 //Get data for the seeker entry funnel chart.
-router.get("/analytics/seeker-funnel");
+// router.get("/analytics/seeker-funnel");
 
 //Get data for the reveal conversion chart.
-router.get("/analytics/reveal-conversion");
+// router.get("/analytics/reveal-conversion");
 
 //Get data for the referrer engagement chart.
-router.get("/analytics/referrer-engagement");
+// router.get("/analytics/referrer-engagement");
 
 // Get data for the ApplyPool liquidity and profile completion.
-router.get("/analytics/applypool");
+// router.get("/analytics/applypool");
 
 module.exports = router;
-
-
-//!register admin 
-/**
- * ?example 
- * Admin registation data =  {
- * fullName
- * email
- * password 
- * adminKey //  with out admin key no one can register and access the admin access
- *     } 
- * 
- * ?response payload => {
- * const data = {
-        user: {
-          id: "admin-2",
-          fullName: payload.fullName,
-          email: payload.email,
-          username: payload.email,
-        },
-        tokens: {
-          accessToken: "mock-access-token-signup",
-          refreshToken: "mock-refresh-token-signup",
-        },
-      };
- * }
- */
-
-
-//!login admin 
-/**
- * ?example 
- * Admin login  data =  {
- * usernamem //  same as full name
- * password 
- *   } 
- * 
- * ?response payload  same as register 
- */
