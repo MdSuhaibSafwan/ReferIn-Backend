@@ -1,11 +1,31 @@
 const express = require("express");
-const { login, logout } = require("../controllers/super-admin/adminauth.controller");
+
+const {
+  login,
+  logout,
+} = require("../controllers/super-admin/adminauth.controller");
+
 const {
   getAllJobs,
   getJobById,
   deleteJob,
   createJob,
 } = require("../controllers/super-admin/jobs.controller");
+
+const {
+  getAllReferrers,
+  getReferrerById,
+} = require("../controllers/super-admin/referrers.controller");
+
+const {
+  getAllSeekers,
+  getSeekerById,
+} = require("../controllers/super-admin/seekers.controller");
+
+const {
+  getQuickStats,
+} = require("../controllers/super-admin/quickStats.controller");
+
 const router = express.Router();
 
 /**
@@ -27,7 +47,7 @@ router.post("/auth/logout", logout);
 router.get("/jobs", getAllJobs);
 
 //create a single jobs with
-router.get("/jobs/create", createJob);
+router.post("/jobs/create", createJob);
 
 //Get a single job vacancy by its ID.
 router.get("/jobs/:id", getJobById);
@@ -41,10 +61,10 @@ router.delete("/jobs/:id", deleteJob);
  */
 
 // Get a list of all referrers.
-// router.get("/referrers");
+router.get("/referrers", getAllReferrers);
 
 //Get a single referrer by their ID.
-// router.get("/referrers/:id");
+router.get("/referrers/:id", getReferrerById);
 
 /**
  * *Seeker Management Routes
@@ -52,10 +72,10 @@ router.delete("/jobs/:id", deleteJob);
  */
 
 //get all the Seekers data
-// router.get("/seekers");
+router.get("/seekers", getAllSeekers);
 
 //Get a single seeker by their ID.
-// router.get("/seekers/:id");
+router.get("/seekers/:id", getSeekerById);
 
 /**
  * *Dashboard overview
@@ -63,7 +83,7 @@ router.delete("/jobs/:id", deleteJob);
  */
 
 //get all the quick analytics data
-// router.get("/quick-stats");
+router.get("/quick-stats", getQuickStats);
 
 /**
  * *Analytics Routes

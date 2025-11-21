@@ -4,7 +4,7 @@ const seekerRoutes = require("./routes/seeker");
 const refererRoutes = require("./routes/referer");
 const paymentRoutes = require("./routes/payment");
 const dashboardRoutes = require("./routes/dashboard");
-const superAdmin = require("./routes/superAdminroutes");
+const SuperAdmin = require("./routes/superAdmin.routes");
 
 const router = express.Router();
 
@@ -15,6 +15,6 @@ router.use("/seeker", seekerRoutes);
 router.use("/referer", refererRoutes);
 router.use("/payment", paymentRoutes);
 router.use("/dashboard", dashboardRoutes);
-router.use("/super-admin", superAdmin);
+router.use("/super-admin", SuperAdmin);
 
 module.exports = router;

@@ -62,6 +62,7 @@ const getAllJobs = async (req, res) => {
       })
     );
 
+
     res.json({
       success: true,
       data: jobsWithDetails,
@@ -158,7 +159,7 @@ const deleteJob = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // First, check if job exists
+    // check if job exists
     const { data: job, error: jobError } = await Vacancy.findById(id);
 
     if (jobError) {
