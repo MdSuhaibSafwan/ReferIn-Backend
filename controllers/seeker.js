@@ -16,37 +16,45 @@ async function getReferersFromDB({
     job_title,
     company_name,
   });
-  var aiResponse = await VacancyAI.vacancyMatch({
-    job_url,
-    job_title,
-    company_name,
-  });
-  if (aiResponse == null) {
-    return [];
-  } else {
-    if (aiResponse.matches.length == 0) {
+
+  try {
+    var aiResponse = await VacancyAI.vacancyMatch({
+      job_url,
+      job_title,
+      company_name,
+    });
+
+    if (aiResponse == null) {
       return [];
     } else {
-      var userIdArray = Array();
-      aiResponse.matches.forEach((element) => {
-        if (!userIdArray.includes(element.user_id)) {
-          userIdArray.push(element.user_id);
-        }
-      });
-      var userData = await User.findByArray(userIdArray);
-      userData.data.forEach((each) => {
-        each.name = each.full_name;
-        each.company = "Google";
-        each.role = "Backend Engineer";
-        each.photo = each.picture;
-        each.location = "Bangladesh";
-        each.linkedin = "https://www.linkedin.com/in/tafsirul-islam-b6b593338/";
-        each.vacancies = "5";
-      });
-      console.log(userData.data);
+      if (aiResponse.matches.length == 0) {
+        return [];
+      } else {
+        var userIdArray = Array();
+        aiResponse.matches.forEach((element) => {
+          if (!userIdArray.includes(element.user_id)) {
+            userIdArray.push(element.user_id);
+          }
+        });
+        var userData = await User.findByArray(userIdArray);
+        userData.data.forEach((each) => {
+          each.name = each.full_name;
+          each.company = "Google";
+          each.role = "Backend Engineer";
+          each.photo = each.picture;
+          each.location = "Bangladesh";
+          each.linkedin =
+            "https://www.linkedin.com/in/tafsirul-islam-b6b593338/";
+          each.vacancies = "5";
+        });
+        console.log(userData.data);
 
-      return userData.data;
+        return userData.data;
+      }
     }
+  } catch (error) {
+    console.error("Error in getReferersFromDB:", error);
+    return [];
   }
 }
 
@@ -62,18 +70,17 @@ const instructions = `
 `;
 
 exports.checkMatchesOfReferer = async (req, res, next) => {
-  const seekerInput = {
-    job_url: req.body.job_spec_url,
-    job_title: req.body.job_title,
-    company_name: req.body.job_company,
-  };
-  console.log("Seeker input:", seekerInput);
-  var result = await getReferersFromDB(seekerInput);
-
-  result = JSON.stringify(result);
-
   try {
-    // var filteredReferers = JSON.parse(response.output_text);
+    const seekerInput = {
+      job_url: req.body.job_spec_url,
+      job_title: req.body.job_title,
+      company_name: req.body.job_company,
+    };
+    console.log("Seeker input:", seekerInput);
+    var result = await getReferersFromDB(seekerInput);
+
+    result = JSON.stringify(result);
+
     var data = {
       message: "Accepted",
       referers_found: true,
@@ -82,11 +89,10 @@ exports.checkMatchesOfReferer = async (req, res, next) => {
     };
     res.status(201).json(data);
   } catch (err) {
-    console.log(err);
-    console.log(response.output_text);
+    console.log("Error in checkMatchesOfReferer:", err);
     var data = {
       message: "Accepted",
-      referers_found: true,
+      referers_found: false,
       referer_count: 0,
       data: [],
     };

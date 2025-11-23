@@ -2,7 +2,7 @@ const dotenv = require("dotenv");
 const OpenAI = require("openai");
 const ExtractText = require("../services/extractText");
 dotenv.config()
-const Vacancy = require("../models/vacancy");
+const {Vacancy} = require("../models/vacancy");
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 

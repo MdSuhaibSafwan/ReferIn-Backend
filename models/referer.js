@@ -122,7 +122,6 @@ class Referrer {
     }
   }
 
-  // Keep your existing methods but fix the ID field
   static async findById(id) {
     return await supabase.from("referrer").select("*").eq("uuid", id);
   }
@@ -140,4 +139,4 @@ class Referrer {
   }
 }
 
-module.exports = Referrer;
+module.exports = {Referrer};

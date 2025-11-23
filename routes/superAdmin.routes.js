@@ -26,6 +26,13 @@ const {
   getQuickStats,
 } = require("../controllers/super-admin/quickStats.controller");
 
+const {
+  getSeekerFunnel,
+  getRevealConversion,
+  getReferrerEngagement,
+  getApplyPoolAnalytics,
+} = require("../controllers/super-admin/analytics.controller");
+
 const router = express.Router();
 
 /**
@@ -91,15 +98,15 @@ router.get("/quick-stats", getQuickStats);
  */
 
 //Get data for the seeker entry funnel chart.
-// router.get("/analytics/seeker-funnel");
+router.get("/analytics/seeker-funnel", getSeekerFunnel);
 
 //Get data for the reveal conversion chart.
-// router.get("/analytics/reveal-conversion");
+router.get("/analytics/reveal-conversion", getRevealConversion);
 
 //Get data for the referrer engagement chart.
-// router.get("/analytics/referrer-engagement");
+router.get("/analytics/referrer-engagement", getReferrerEngagement);
 
 // Get data for the ApplyPool liquidity and profile completion.
-// router.get("/analytics/applypool");
+router.get("/analytics/applypool", getApplyPoolAnalytics);
 
 module.exports = router;

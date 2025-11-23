@@ -1,6 +1,5 @@
 const supabase = require("../db/supabase");
 
-
 const MOCK_MODE = true;
 
 /**
@@ -8,15 +7,7 @@ const MOCK_MODE = true;
  * Handles login and logout functionality for super admins.
  */
 
-
 class SuperAdmin {
-  /**
-   * Login a super admin
-   * @param {Object} param0
-   * @param {string} param0.email - Unique email of the admin
-   * @param {string} param0.password - Admin password
-   * @returns {Object} - Returns user info or error
-   */
   static async login({ email, password }) {
     if (MOCK_MODE) {
       // Mock login validation
@@ -32,12 +23,12 @@ class SuperAdmin {
       };
     }
 
-    // Real Supabase query to check admin credentials
+    //  check admin credentials
     const { data, error } = await supabase
       .from("admin.super_admins")
       .select("*")
       .eq("email", email)
-      .eq("password", password) 
+      .eq("password", password)
       .single();
 
     if (error || !data) {
@@ -54,7 +45,6 @@ class SuperAdmin {
 
   /**
    * Logout a super admin
-   * @returns {Object} - Confirmation message
    */
   static async logout() {
     return { message: "Logged out successfully" };
