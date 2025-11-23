@@ -115,10 +115,36 @@ class VacancySkill {
   }
 }
 
+
+class VacancyMatch {
+  static async findBySeekerId(seekerId) {
+    return await supabase
+      .from("vacancy_match")
+      .select("*")
+      .eq("seeker_id", seekerId);
+  }
+
+  static async findByVacancyId(vacancyId) {
+    return await supabase
+      .from("vacancy_match")
+      .select("*")
+      .eq("vacancy_id", vacancyId);
+  }
+
+  static async insert(data) {
+    return await supabase.from("vacancy_match").insert(data).select();
+  }
+
+  static async deleteById(id) {
+    return await supabase.from("vacancy_match").delete().eq("id", id);
+  }
+}
+
 exports.Vacancy = Vacancy;
 exports.VacancyRequirement = VacancyRequirement;
 exports.VacancyResponsibility = VacancyResponsibility;
 exports.VacancySkill = VacancySkill;
+exports.VacancyMatch = VacancyMatch;
+
 // Removed these exports
 // exports.VacancyExperience = VacancyExperience;
-// exports.VacancyMatch = VacancyMatch;

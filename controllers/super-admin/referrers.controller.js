@@ -3,7 +3,7 @@
  * Handles getAllReferrers, getReferrerById requests from frontend
  */
 
-const Referrer = require("../../models/referer");
+const {Referrer} = require("../../models/referer");
 
 /**
  * Get all referrers with pagination and search

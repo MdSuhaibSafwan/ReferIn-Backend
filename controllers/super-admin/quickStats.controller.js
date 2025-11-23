@@ -78,7 +78,7 @@ const getStatsForTable = async (tableName) => {
  * Fetches total counts and trends for referrers, seekers, and job vacancies.
  */
 const getQuickStats = async (req, res) => {
-  console.log("apis hitted of quickstats");
+
   try {
     const [totalReferrers, totalSeekers, jobVacancies] = await Promise.all([
       getStatsForTable("referrer"),

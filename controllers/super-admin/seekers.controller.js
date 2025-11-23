@@ -46,7 +46,6 @@ const getAllSeekers = async (req, res) => {
     }
 
     if (seekers && seekers.length > 0) {
-      console.log("First seeker sample:", JSON.stringify(seekers[0], null, 2));
       console.log("Seekers fields:", Object.keys(seekers[0]));
     } else {
       //No seekers found in database;
@@ -74,11 +73,6 @@ const getAllSeekers = async (req, res) => {
         console.error("Error fetching users:", usersError);
       } else {
         users = usersData || [];
-
-        if (users.length > 0) {
-          console.log("First user sample:", JSON.stringify(users[0], null, 2));
-          console.log("Users fields:", Object.keys(users[0]));
-        }
       }
     }
 
@@ -92,25 +86,25 @@ const getAllSeekers = async (req, res) => {
       SeekerWorkExperience.findByArray(seekerIds),
     ]);
 
-    if (skillsData.data && skillsData.data.length > 0) {
-      console.log(
-        "First skill sample:",
-        JSON.stringify(skillsData.data[0], null, 2)
-      );
-      console.log("Skills fields:", Object.keys(skillsData.data[0]));
-    }
+    // if (skillsData.data && skillsData.data.length > 0) {
+    //   console.log(
+    //     "First skill sample:",
+    //     JSON.stringify(skillsData.data[0], null, 2)
+    //   );
+    //   console.log("Skills fields:", Object.keys(skillsData.data[0]));
+    // }
 
-    if (educationData.data && educationData.data.length > 0) {
-      console.log(
-        "First education sample:",
-        JSON.stringify(educationData.data[0], null, 2)
-      );
-      console.log("Education fields:", Object.keys(educationData.data[0]));
-    }
+    // if (educationData.data && educationData.data.length > 0) {
+    //   console.log(
+    //     "First education sample:",
+    //     JSON.stringify(educationData.data[0], null, 2)
+    //   );
+    //   console.log("Education fields:", Object.keys(educationData.data[0]));
+    // }
 
-    if (experienceData.data && experienceData.data.length > 0) {
-      console.log("Experience fields:", Object.keys(experienceData.data[0]));
-    }
+    // if (experienceData.data && experienceData.data.length > 0) {
+    //   console.log("Experience fields:", Object.keys(experienceData.data[0]));
+    // }
 
     // Group related data by seeker_id
     const skillsBySeeker = {};
@@ -246,8 +240,6 @@ const getSeekerById = async (req, res) => {
         console.error("Error fetching user:", userError);
       } else {
         user = userData || {};
-        console.log("User data:", JSON.stringify(user, null, 2));
-        console.log("User fields:", Object.keys(user));
       }
     }
 
@@ -303,9 +295,6 @@ const getSeekerById = async (req, res) => {
       experience_years: Math.round(totalExperience * 10) / 10,
       user: user,
     };
-
-    console.log("=== FINAL TRANSFORMED SEEKER ===");
-    console.log(JSON.stringify(transformedSeeker, null, 2));
 
     res.json({
       success: true,
