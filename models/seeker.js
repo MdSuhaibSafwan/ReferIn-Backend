@@ -1,4 +1,3 @@
-// models/seeker.js
 const supabase = require("../db/supabase");
 
 class Seeker {
@@ -12,7 +11,10 @@ class Seeker {
   }
 
   static async getOrCreate(data) {
-    var seeker = await supabase.from("seeker").select("*").eq("user_id", data.user_id);
+    var seeker = await supabase
+      .from("seeker")
+      .select("*")
+      .eq("user_id", data.user_id);
     if (seeker.data && seeker.data.length > 0) {
       return seeker;
     } else {
@@ -30,10 +32,7 @@ class Seeker {
   }
 
   static async findByArray(idArray) {
-    return await supabase
-      .from("seeker")
-      .select("*")
-      .in("uuid", idArray);
+    return await supabase.from("seeker").select("*").in("uuid", idArray);
   }
 
   static async update(identifier, data, by = "uuid") {
@@ -46,26 +45,27 @@ class Seeker {
   }
 
   static async deleteById(id) {
-    return await supabase
-      .from("seeker")
-      .delete()
-      .eq("uuid", id);
+    return await supabase.from("seeker").delete().eq("uuid", id);
   }
 
   // New method for paginated fetching with user data
-  static async fetchAllPaginated(limit = 10, offset = 0, search = '') {
+  static async fetchAllPaginated(limit = 10, offset = 0, search = "") {
     try {
-      let query = supabase
-        .from("seeker")
-        .select("*", { count: 'exact' });
+      let query = supabase.from("seeker").select("*", { count: "exact" });
 
       if (search) {
-        query = query.or(`current_company.ilike.%${search}%,location.ilike.%${search}%`);
+        query = query.or(
+          `current_company.ilike.%${search}%,location.ilike.%${search}%`
+        );
       }
 
-      const { data: seekers, error, count } = await query
+      const {
+        data: seekers,
+        error,
+        count,
+      } = await query
         .range(offset, offset + limit - 1)
-        .order('created_at', { ascending: false });
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
 
@@ -91,7 +91,10 @@ class SeekerSkill {
   }
 
   static async findBySeekerId(seeker_id) {
-    return await supabase.from("seeker_skill").select("*").eq("seeker_id", seeker_id);
+    return await supabase
+      .from("seeker_skill")
+      .select("*")
+      .eq("seeker_id", seeker_id);
   }
 
   static async findByArray(seekerIds) {
@@ -123,7 +126,10 @@ class SeekerEducation {
   }
 
   static async insert(data) {
-    let userData = await supabase.from("seeker_education").insert(data).select();
+    let userData = await supabase
+      .from("seeker_education")
+      .insert(data)
+      .select();
     return userData;
   }
 
@@ -132,7 +138,10 @@ class SeekerEducation {
   }
 
   static async findBySeekerId(seeker_id) {
-    return await supabase.from("seeker_education").select("*").eq("seeker_id", seeker_id);
+    return await supabase
+      .from("seeker_education")
+      .select("*")
+      .eq("seeker_id", seeker_id);
   }
 
   static async findByArray(seekerIds) {
@@ -164,7 +173,10 @@ class SeekerWorkExperience {
   }
 
   static async insert(data) {
-    let userData = await supabase.from("seeker_work_history").insert(data).select();
+    let userData = await supabase
+      .from("seeker_work_history")
+      .insert(data)
+      .select();
     return userData;
   }
 
@@ -173,7 +185,10 @@ class SeekerWorkExperience {
   }
 
   static async findBySeekerId(seeker_id) {
-    return await supabase.from("seeker_work_history").select("*").eq("seeker_id", seeker_id);
+    return await supabase
+      .from("seeker_work_history")
+      .select("*")
+      .eq("seeker_id", seeker_id);
   }
 
   static async findByArray(seekerIds) {
@@ -202,17 +217,19 @@ class SeekerWorkExperience {
   static async getTotalExperience(seekerId) {
     try {
       const { data: experiences, error } = await this.findBySeekerId(seekerId);
-      
+
       if (error) return 0;
-      
+
       let totalMonths = 0;
-      experiences.data?.forEach(exp => {
+      experiences.data?.forEach((exp) => {
         const start = new Date(exp.start_date);
         const end = exp.current ? new Date() : new Date(exp.end_date);
-        const months = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth());
+        const months =
+          (end.getFullYear() - start.getFullYear()) * 12 +
+          (end.getMonth() - start.getMonth());
         totalMonths += Math.max(0, months);
       });
-      
+
       return Math.round((totalMonths / 12) * 10) / 10; // Return in years with 1 decimal
     } catch (error) {
       return 0;
@@ -223,20 +240,21 @@ class SeekerWorkExperience {
 // Utility function to get complete seeker profile with all related data
 const getCompleteSeekerProfile = async (seekerId) => {
   try {
-    const [seekerResult, skillsResult, educationResult, experienceResult] = await Promise.all([
-      Seeker.findById(seekerId),
-      SeekerSkill.findBySeekerId(seekerId),
-      SeekerEducation.findBySeekerId(seekerId),
-      SeekerWorkExperience.findBySeekerId(seekerId)
-    ]);
+    const [seekerResult, skillsResult, educationResult, experienceResult] =
+      await Promise.all([
+        Seeker.findById(seekerId),
+        SeekerSkill.findBySeekerId(seekerId),
+        SeekerEducation.findBySeekerId(seekerId),
+        SeekerWorkExperience.findBySeekerId(seekerId),
+      ]);
 
     if (seekerResult.error) throw new Error(seekerResult.error.message);
     if (!seekerResult.data || seekerResult.data.length === 0) {
-      throw new Error('Seeker not found');
+      throw new Error("Seeker not found");
     }
 
     const seeker = seekerResult.data[0];
-    
+
     // Get user data
     let user = {};
     if (seeker.user_id) {
@@ -258,7 +276,7 @@ const getCompleteSeekerProfile = async (seekerId) => {
       education: educationResult.data || [],
       work_experience: experienceResult.data || [],
       skills_count: skillsResult.data?.length || 0,
-      experience_years: await SeekerWorkExperience.getTotalExperience(seekerId)
+      experience_years: await SeekerWorkExperience.getTotalExperience(seekerId),
     };
   } catch (error) {
     throw error;
@@ -272,7 +290,7 @@ const deleteSeekerCompletely = async (seekerId) => {
     await Promise.all([
       SeekerSkill.deleteBySeekerId(seekerId),
       SeekerEducation.deleteBySeekerId(seekerId),
-      SeekerWorkExperience.deleteBySeekerId(seekerId)
+      SeekerWorkExperience.deleteBySeekerId(seekerId),
     ]);
 
     // Delete the seeker
@@ -289,5 +307,5 @@ module.exports = {
   SeekerEducation,
   SeekerWorkExperience,
   getCompleteSeekerProfile,
-  deleteSeekerCompletely
+  deleteSeekerCompletely,
 };

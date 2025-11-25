@@ -309,7 +309,42 @@ const getSeekerById = async (req, res) => {
   }
 };
 
+const deleteSeeker = async (req, res) => {
+  try {
+    const { id } = req.params;
+    console.log("id", id);
+    // Delete seeker profile from seeker table
+    const {
+      data,
+      statusText,
+      error: seekerError,
+    } = await supabase.from("seeker").delete().eq("user_id", id);
+
+    if (seekerError) {
+      console.error("Error deleting seeker:", seekerError);
+      return res.status(400).json({
+        success: false,
+        error: seekerError.message,
+      });
+    }
+
+    console.log("user data deleted", data);
+    console.log("user data deleted statys ", statusText);
+    res.json({
+      success: true,
+      message: "Seeker deleted successfully",
+    });
+  } catch (error) {
+    console.error("Error deleting seeker:", error);
+    res.status(500).json({
+      success: false,
+      error: "Internal server error",
+    });
+  }
+};
+
 module.exports = {
   getAllSeekers,
   getSeekerById,
+  deleteSeeker,
 };

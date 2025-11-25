@@ -20,6 +20,7 @@ const {
 const {
   getAllSeekers,
   getSeekerById,
+  deleteSeeker,
 } = require("../controllers/super-admin/seekers.controller");
 
 const {
@@ -83,6 +84,9 @@ router.get("/seekers", getAllSeekers);
 
 //Get a single seeker by their ID.
 router.get("/seekers/:id", getSeekerById);
+
+//Delete a single seeker by their ID. //not working
+// router.delete("/seekers/:id", deleteSeeker);
 
 /**
  * *Dashboard overview

@@ -1,13 +1,14 @@
 const dotenv = require("dotenv");
 const User = require("../models/user");
 const UserToken = require("../models/token");
-const Referer = require("../models/referer");
+const {Referrer} =  require('../models/referer')
 const { Seeker } = require("../models/seeker");
 const { UserTokenSerializer } = require("../serializers/token");
 const axios = require("axios");
 const jwtDecode = require("jwt-decode");
 const StripeSession = require("../models/payment");
 const jwt = require("jsonwebtoken");
+const { refererMiddleware } = require("../middleware/refererMiddleware");
 
 dotenv.config();
 
@@ -118,7 +119,7 @@ exports.linkedInCallback = async (req, res) => {
         var seeker = seekerInsert.data[0];
         console.log(seeker);
       } else if (userType == "referrer") {
-        var refererInsert = await Referer.insert({
+        var refererInsert = await Referrer.insert({
           user_id: user.id,
           picture: user.picture,
           email: user.email,
